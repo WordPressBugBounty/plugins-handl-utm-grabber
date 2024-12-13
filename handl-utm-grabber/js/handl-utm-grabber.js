@@ -24,10 +24,36 @@ jQuery(function($) {
     });
 
     $('.utm-out').each(function(){
-        var merged = $.extend( {}, handl_utm, getSearchParams(this.href) )
-        this.href = ""
-        if ( !$.isEmptyObject(merged) )
-            this.href += "?"+$.param(merged)
+        // Only process if this is an anchor tag with href
+        if (this.tagName.toLowerCase() !== 'a' || !this.href) {
+            return;
+        }
+        
+        // Sanitize URL parameters and handl_utm object
+        var urlParams = getSearchParams(this.href);
+        var sanitizedParams = {};
+        
+        // Only include parameters that exist in handl_utm
+        for(var key in urlParams) {
+            if(handl_utm.hasOwnProperty(key)) {
+                sanitizedParams[key] = encodeURIComponent(urlParams[key]);
+            }
+        }
+        
+        // Sanitize handl_utm values
+        var sanitizedHandlUtm = {};
+        for(var key in handl_utm) {
+            sanitizedHandlUtm[key] = encodeURIComponent(handl_utm[key]);
+        }
+
+        // Merge sanitized objects
+        var merged = $.extend({}, sanitizedHandlUtm, sanitizedParams);
+        
+        // Reset href and append sanitized parameters
+        this.href = this.href.split('?')[0]; // Keep base URL only
+        if(!$.isEmptyObject(merged)) {
+            this.href += "?" + $.param(merged);
+        }
     });
 });
 

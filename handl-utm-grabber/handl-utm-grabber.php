@@ -4,7 +4,7 @@ Plugin Name: HandL UTM Grabber
 Plugin URI: https://utmgrabber.com
 Description: The easiest way to capture UTMs on your (optin) forms.
 Author: Haktan Suren
-Version: 2.7.27
+Version: 2.7.30
 Author URI: https://www.utmgrabber.com/
 */
 
@@ -55,7 +55,25 @@ function CaptureUTMs(){
 		if ( strtolower( substr($domain, 0, 4) ) == 'www.' ) $domain = substr($domain, 4);
         if ( substr($domain, 0, 1) != '.' && $domain != "localhost" && $domain != "handl-sandbox" ) $domain = '.'.$domain;
 
-		setcookie($field, $cookie_field , time()+60*60*24*30, '/', $domain );
+		// Secure cookie settings
+		$secure = isset($_SERVER["HTTPS"]); // Only send cookie over HTTPS
+		$httponly = get_option('hug_httponly_cookies') == '1'; // Get setting value, defaults to false
+		$samesite = 'Lax'; // Protect against CSRF attacks while allowing normal links
+
+		if (PHP_VERSION_ID < 70300) {
+			// For PHP versions < 7.3
+			setcookie($field, $cookie_field, time()+60*60*24*30, '/; samesite='.$samesite, $domain, $secure, $httponly);
+		} else {
+			// For PHP 7.3+
+			setcookie($field, $cookie_field, [
+				'expires' => time()+60*60*24*30,
+				'path' => '/',
+				'domain' => $domain,
+				'secure' => $secure,
+				'httponly' => $httponly,
+				'samesite' => $samesite
+			]);
+		}
 
 		$_COOKIE[$field] = $cookie_field;
 
@@ -225,6 +243,7 @@ add_action( 'admin_init', 'handl_on_admin_init');
 function register_handl_utm_grabber_settings() {
 	register_setting( 'handl-utm-grabber-settings-group', 'hug_append_all' );
 	register_setting( 'handl-utm-grabber-settings-group', 'hug_zapier_url' );
+	register_setting( 'handl-utm-grabber-settings-group', 'hug_httponly_cookies' ); // Add new setting
 }
 
 function handl_utm_grabber_menu_page(){
@@ -269,6 +288,23 @@ function handl_utm_grabber_menu_page(){
                                 <pre><?php print_r(get_option( 'hug_zapier_log' )); ?></pre>
                             </div>
 							<?php } ?>
+						</fieldset>
+					</td>
+				</tr>
+				<tr>
+					<th scope='row'>Enhanced Security Mode</th>
+					<td>
+						<fieldset>
+							<legend class='screen-reader-text'>
+								<span>Enhanced Security Mode</span>
+							</legend>
+							<label for='hug_httponly_cookies'>
+								<input name='hug_httponly_cookies' id='hug_httponly_cookies' type='checkbox' value='1' <?php print checked( '1', get_option( 'hug_httponly_cookies' ) ) ?> />
+								Enable HttpOnly cookies (Enhanced Security Mode)
+							</label>
+							<p class='description' id='handl-utm-grabber-httponly-description' style="color: #d63638;">
+								<b>Warning:</b> Only enable this if you know exactly what you're doing. When enabled, this makes your cookies more secure by preventing JavaScript access, but it may cause some tracking data to be lost.
+							</p>
 						</fieldset>
 					</td>
 				</tr>
@@ -351,29 +387,45 @@ function handl_utm_grabber_menu_page(){
 }
 
 function HUG_Append_All($content) {
-  if ($content != '' && get_option( 'hug_append_all' ) == 1 ){
+  if ($content != '' && get_option('hug_append_all') == 1) {
     if (!function_exists('str_get_html'))
       require_once('simple_html_dom.php');
     $html = str_get_html($content);
 
-	  if (is_object($html)) {
-		  $as = $html->find( 'a' );
+    if (is_object($html)) {
+      $as = $html->find('a');
+      $search = array();
+      $replace = array();
+      
+      foreach ($as as $a) {
+        $a_original = $a->href;
 
-		  $search  = array();
-		  $replace = array();
-		  foreach ( $as as $a ) {
+        // Skip invalid/empty URLs
+        if ($a_original == '') continue;
+        if (preg_match('/javascript:void/',$a_original)) continue;
+        if (preg_match('/^#/',$a_original)) continue;
+        
+        // Sanitize URL
+        $a_original = esc_url($a_original);
+        
+        // Only proceed if URL is valid
+        if (!filter_var($a_original, FILTER_VALIDATE_URL) && !preg_match('/^\//', $a_original)) {
+          continue;
+        }
 
-			  $a_original = $a->href;
-
-			  if ($a_original == '') continue;
-			  if (preg_match('/javascript:void/',$a_original)) continue;
-			  if (preg_match('/^#/',$a_original)) continue;
-
-			  $search[]  = "/['\"]" . preg_quote( $a_original, '/' ) . "['\"]/";
-			  $replace[] = add_query_arg( HUGGenerateUTMsForURL(), html_entity_decode( $a_original ) );
-		  }
-		  $content = preg_replace( $search, $replace, $content );
-	  }
+        $search[] = "/['\"]" . preg_quote($a_original, '/') . "['\"]/";
+        
+        // Safely append UTM parameters
+        $utm_params = array_map('esc_attr', HUGGenerateUTMsForURL());
+        $modified_url = esc_url(add_query_arg($utm_params, $a_original));
+        
+        $replace[] = '"' . $modified_url . '"';
+      }
+      
+      if (!empty($search) && !empty($replace)) {
+        $content = preg_replace($search, $replace, $content);
+      }
+    }
   }
   return $content;
 }
@@ -846,66 +898,72 @@ function get_test_handl_gf_shortcodes_used() {
 }
 
 function get_test_handl_nf_shortcodes_used() {
-	$posts = Ninja_Forms()->form()->get_forms();
-	/** @var NF_Database_Models_Form $post */
-	$utm_variables = handl_utm_variables();
-	$nf_forms = array();
-	$nf_forms_id2_name = array();
-	$nf_forms_feedback = array();
-	foreach ( $posts as $post ) {
-	    $form = $post->get_settings();
-		$formID = $post->get_id();
-		$nf_forms_id2_name[$formID] = $form['title'];
-		$nf_forms[$formID] = true;
+    $posts = Ninja_Forms()->form()->get_forms();
+    /** @var NF_Database_Models_Form $post */
+    $utm_variables = handl_utm_variables();
+    $nf_forms = array();
+    $nf_forms_id2_name = array();
+    $nf_forms_feedback = array();
+    foreach ( $posts as $post ) {
+        $form = $post->get_settings();
+        $formID = $post->get_id();
+        $nf_forms_id2_name[$formID] = $form['title'];
+        $nf_forms[$formID] = true;
 
-		$fields = $form['formContentData'];
+        $fields = $form['formContentData'];
 
-		foreach ($utm_variables as $variable){
-			$check = false;
-			foreach ($fields as $field){
-				if ($field != ''){
-					if ( preg_match("/".preg_quote($variable,'/')."/", $field) ){
-						$check = true;
-					}
-				}
-			}
-			if (!$check){
-				$nf_forms[$formID] = false;
-				$nf_forms_feedback[$formID][] = $variable;
-			}
-		}
-	}
+        foreach ($utm_variables as $variable){
+            $check = false;
+            foreach ($fields as $field){
+                // Add type check to ensure $field is a string
+                if (is_string($field) && $field != ''){
+                    if ( preg_match("/".preg_quote($variable,'/')."/", $field) ){
+                        $check = true;
+                    }
+                } elseif (is_array($field) && isset($field['value']) && is_string($field['value'])) {
+                    // If field is an array, check the 'value' property if it exists
+                    if ( preg_match("/".preg_quote($variable,'/')."/", $field['value']) ){
+                        $check = true;
+                    }
+                }
+            }
+            if (!$check){
+                $nf_forms[$formID] = false;
+                $nf_forms_feedback[$formID][] = $variable;
+            }
+        }
+    }
 
-	$all_forms_good = array_filter($nf_forms, function ($element) {
-		return ($element !== true);
-	});
+    $all_forms_good = array_filter($nf_forms, function ($element) {
+        return ($element !== true);
+    });
 
-	$recommendation = '';
-	if (sizeof($nf_forms_feedback) > 0){
-		foreach ($nf_forms_feedback as $id=>$fb){
-			$recommendation .= "<p><b>$nf_forms_id2_name[$id]</b>: ".implode(",",$fb)."</p>";
-		}
-	}
+    $recommendation = '';
+    if (sizeof($nf_forms_feedback) > 0){
+        foreach ($nf_forms_feedback as $id=>$fb){
+            $recommendation .= "<p><b>$nf_forms_id2_name[$id]</b>: ".implode(",",$fb)."</p>";
+        }
+    }
 
-	$positive = "<p>All of your Ninja Forms set up properly. You are good to go!</p>";
-	$negative = "<p>Your Ninja forms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>
-	    $recommendation
-	";
+    $positive = "<p>All of your Ninja Forms set up properly. You are good to go!</p>";
+    $negative = "<p>Your Ninja forms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>
+        $recommendation
+    ";
 
-	$positive_action = 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_nf&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>';
-	$negative_action = '<a href="https://docs.utmgrabber.com/books/ninja-forms-integration/page/ninja-forms-integration?utm_campaign=utm_proper_nf&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to learn the best practice of collecting UTM parameters in Ninja Forms <span aria-hidden="true" class="dashicons dashicons-external"></span></a>';
+    $positive_action = 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_nf&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>';
+    $negative_action = '<a href="https://docs.utmgrabber.com/books/ninja-forms-integration/page/ninja-forms-integration?utm_campaign=utm_proper_nf&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to learn the best practice of collecting UTM parameters in Ninja Forms <span aria-hidden="true" class="dashicons dashicons-external"></span></a>';
 
-	return array(
-		'label' => 'Are your capturing/tracking UTMs properly in your Ninja Form?',
-		'status'      => sizeof($all_forms_good) > 0 ? 'recommended' : 'good',
-		'badge'       => array(
-			'color' => sizeof($all_forms_good) > 0 ? 'red' : 'blue',
-			'label' => 'UTM'
-		),
-		'description' => sizeof($all_forms_good) > 0 ? $negative : $positive,
-		'actions'     => sizeof($all_forms_good) > 0 ? $negative_action : $positive_action,
-		'test'        => 'handl_nf_shortcodes_used',
-	);
+    return array(
+        'label' => 'Are your capturing/tracking UTMs properly in your Ninja Form?',
+        'status'      => sizeof($all_forms_good) > 0 ? 'recommended' : 'good',
+        'badge'       => array(
+            'color' => sizeof($all_forms_good) > 0 ? 'red' : 'blue',
+            'label' => 'UTM'
+        ),
+        'description' => sizeof($all_forms_good) > 0 ? $negative : $positive,
+        'actions'     => sizeof($all_forms_good) > 0 ? $negative_action : $positive_action,
+        'test'        => 'handl_nf_shortcodes_used',
+    );
 }
 
 function handl_utm_add_menu( WP_Admin_Bar $wp_admin_bar ){

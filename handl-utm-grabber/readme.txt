@@ -2,8 +2,8 @@
 Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
-Tested up to: 6.6
-Stable tag: 2.7.27
+Tested up to: 6.7
+Stable tag: 2.7.30
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -199,6 +199,15 @@ Community version tracks your leads/users for 30 days. However you can define yo
 1. Zapier Integration
 
 == Changelog ==
+
+= 2.7.30 =
+* Added httponly cookie setting (default is still httponly=false)
+
+= 2.7.29 =
+* Fixed ninja form check for site status health check
+
+= 2.7.28 =
+* Fixed append UTM to all the links bug (potential XSS vulnerability)
 
 = 2.7.27 =
 * Fixed decoding problem
