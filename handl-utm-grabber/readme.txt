@@ -2,8 +2,8 @@
 Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
-Tested up to: 6.7
-Stable tag: 2.7.30
+Tested up to: 6.8
+Stable tag: 2.7.31
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -199,6 +199,9 @@ Community version tracks your leads/users for 30 days. However you can define yo
 1. Zapier Integration
 
 == Changelog ==
+
+= 2.7.31 =
+* Added shortcuts for Contact Form 7 integration and more documentation for CF7 and Gravity
 
 = 2.7.30 =
 * Added httponly cookie setting (default is still httponly=false)

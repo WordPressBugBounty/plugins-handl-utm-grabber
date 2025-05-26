@@ -4,7 +4,7 @@ Plugin Name: HandL UTM Grabber
 Plugin URI: https://utmgrabber.com
 Description: The easiest way to capture UTMs on your (optin) forms.
 Author: Haktan Suren
-Version: 2.7.30
+Version: 2.7.31
 Author URI: https://www.utmgrabber.com/
 */
 
@@ -173,7 +173,75 @@ function handl_apps(){
     ?>
     <div class='wrap' id="handl-utm-apps">
         <h2><span class="dashicons dashicons-screenoptions" style='line-height: 1.1;font-size: 30px; padding-right: 10px;'></span> HandL UTM Grabber: Apps</h2>
-        <p>We compiled the list of applications we highly recommend to you!</p>
+        <p>Looking to enhance your marketing and tracking capabilities? Check out our curated selection of powerful apps designed to help your business grow. From advanced analytics to seamless integrations, we've got you covered!</p>
+        <style>
+            #handl-utm-apps .cards-container {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+                margin-top: 20px;
+            }
+            #handl-utm-apps .card {
+                flex: 1;
+                min-width: 300px;
+                max-width: calc(33.333% - 20px);
+                margin: 0;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                border-radius: 4px;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                transition: box-shadow 0.3s ease;
+                background: #fff;
+            }
+            #handl-utm-apps .card:hover {
+                box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            }
+            #handl-utm-apps .card a {
+                cursor: pointer;
+                text-decoration: none;
+                color: inherit;
+                display: block;
+            }
+            #handl-utm-apps .card img {
+                width: 100%;
+                aspect-ratio: 16/9;
+                object-fit: cover;
+                display: block;
+                margin: 0 auto;
+            }
+           
+            #handl-utm-apps .card .container {
+                padding: 15px;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start;
+            }
+            #handl-utm-apps .card h4 {
+                margin: 0 0 10px 0;
+                font-size: 16px;
+                line-height: 1.4;
+            }
+            #handl-utm-apps .card p {
+                margin: 0;
+                color: #666;
+                font-size: 14px;
+                line-height: 1.4;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: -webkit-box;
+                -webkit-line-clamp: 4;
+                -webkit-box-orient: vertical;
+            }
+            @media screen and (max-width: 782px) {
+                #handl-utm-apps .card {
+                    max-width: 100%;
+                    aspect-ratio: 1;
+                }
+            }
+        </style>
+        <div class="cards-container">
             <div class="card">
                 <a target="_blank" href="https://docs.utmgrabber.com/books/103-internal-apps/page/handl-gclid-reporter?utm_campaign=HandLGCLIDReporter&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
                     <img src="<?php print(plugins_url('img/gclid_reporter.png',__FILE__));?>"></img>
@@ -181,15 +249,41 @@ function handl_apps(){
                 <div class="container">
                     <a target="_blank" href="https://docs.utmgrabber.com/books/103-internal-apps/page/handl-gclid-reporter?utm_campaign=HandLGCLIDReporter&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
                         <h4>
-                            <b>GCLID Reporter (FREE*)</b>
+                            <b>GCLID Reporter</b>
                         </h4>
                     </a>
-                    <p>If you are using Google Ads, you should try this app.<br><br>
-                        *Temporarily
-                    </p>
+                    <p>Tired of guessing where your Google Ads clicks come from? HandL GCLID Reporter connects each GCLID to your campaigns, keywords, and ads—making it easy to see what's working, all in one simple daily report.</p>
                 </div>
             </div>
-        </a>
+
+            <div class="card">
+                <a target="_blank" href="https://docs.utmgrabber.com/books/103-internal-apps/page/ai-powered-report-insight?utm_campaign=HandLAIInsight&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
+                    <img src="<?php print(plugins_url('img/ai_insight.png',__FILE__));?>"></img>
+                </a>
+                <div class="container">
+                    <a target="_blank" href="https://docs.utmgrabber.com/books/103-internal-apps/page/ai-powered-report-insight?utm_campaign=HandLAIInsight&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
+                        <h4>
+                            <b>AI Powered Report Insight</b>
+                        </h4>
+                    </a>
+                    <p>Take the guesswork out of your marketing. UTM Grabber's AI-powered insights show you what's working, what isn't, and how to get better results—right inside WordPress. Quick setup, clear reports, real advice.</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <a target="_blank" href="https://docs.utmgrabber.com/search?term=FB+CAPI&utm_campaign=HandLFBCAPI&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
+                    <img src="<?php print(plugins_url('img/fbcapi.png',__FILE__));?>"></img>
+                </a>
+                <div class="container">
+                    <a target="_blank" href="https://docs.utmgrabber.com/search?term=FB+CAPI&utm_campaign=HandLFBCAPI&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
+                        <h4>
+                            <b>Facebook Conversion API (FB CAPI)</b>
+                        </h4>
+                    </a>
+                    <p>Implement server-side tracking for Facebook Ads to improve conversion tracking accuracy and comply with privacy regulations.</p>
+                </div>
+            </div>
+        </div>
     </div>
     <?php
 }
@@ -313,6 +407,8 @@ function handl_utm_grabber_menu_page(){
 			<?php submit_button(); ?>
 		</form>
 
+        <?php handl_display_form_integrations(); ?>
+
         <div class="utm-notifications">
             <h3>Notifications</h3>
             <?php
@@ -384,6 +480,91 @@ function handl_utm_grabber_menu_page(){
         </div>
 	</div>
 <?php
+}
+
+function handl_generate_form_integration_section($form_type, $integration_data) {
+    if (!is_plugin_active($integration_data['plugin_file'])) {
+        return '';
+    }
+
+    $icon_color = '#2271b1';
+    $border_color = '#2271b1';
+    $premium_link = $integration_data['premium_link'];
+    $docs_link = $integration_data['docs_link'];
+    $utm_campaign = $integration_data['utm_campaign'];
+    $site_health_url = admin_url('site-health.php');
+
+    ob_start();
+    ?>
+    <div class="handl-form-integration" style="margin-top: 30px; padding: 20px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+        <h3 style="margin-top: 0;">
+            <span class="dashicons dashicons-forms" style="color: <?php echo esc_attr($icon_color); ?>;"></span> 
+            <?php echo esc_html($form_type); ?> Integration
+        </h3>
+        
+        <div style="background: #f0f6fc; padding: 15px; border-left: 4px solid <?php echo esc_attr($border_color); ?>; margin: 15px 0;">
+            <p style="margin: 0 0 10px 0;">
+                <strong>🎯 Ready to track your form submissions?</strong> 
+                Follow these steps to integrate UTM tracking with <?php echo esc_html($form_type); ?>:
+            </p>
+            <ol style="margin: 0 0 0 20px;">
+                <li>Add hidden fields to your form for each UTM parameter you want to track</li>
+                <li>Set the field input names to match our UTM parameters (utm_source, utm_medium, etc.)</li>
+                <li>Configure your form notifications to include the UTM data</li>
+            </ol>
+        </div>
+
+        <div style="background: #e7f7ed; padding: 15px; border-left: 4px solid #27ae60; margin: 15px 0;">
+            <p style="margin: 0;">
+                <strong>🔍 Pro Tip:</strong> Check your <a href="<?php echo esc_url($site_health_url); ?>" target="_blank">Site Health</a> page for UTM-specific recommendations and warnings. 
+                This will help you identify any potential issues with your UTM tracking setup and ensure you're following best practices.
+            </p>
+        </div>
+
+        <p>
+            <a href="<?php echo esc_url($docs_link); ?>" target="_blank" class="button button-primary">
+                View Integration Guide 
+                <span class="dashicons dashicons-external" style="vertical-align: middle;"></span>
+            </a>
+        </p>
+
+        <div style="background: #fff8e5; padding: 15px; border-left: 4px solid #dba617; margin-top: 15px;">
+            <p style="margin: 0;">
+                <strong>ℹ️ Note:</strong> The free version allows you to track paid advertising campaigns. 
+                For advanced tracking features including organic traffic, social media, affiliate marketing, and more, 
+                consider upgrading to 
+                <a href="<?php echo esc_url($premium_link); ?>?utm_campaign=<?php echo esc_attr($utm_campaign); ?>&utm_source=WordPress_FREE&utm_medium=settings_page" 
+                   target="_blank" 
+                   style="color: <?php echo esc_attr($icon_color); ?>; text-decoration: underline;">
+                    HandL UTM Grabber V3
+                </a>. 
+                All premium plans come with a 14-day money-back guarantee.
+            </p>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+function handl_display_form_integrations() {
+    $integrations = array(
+        'Contact Form 7' => array(
+            'plugin_file' => 'contact-form-7/wp-contact-form-7.php',
+            'premium_link' => 'https://utmgrabber.com/contact-form-7-utm-tracking/',
+            'docs_link' => 'https://docs.utmgrabber.com/books/contact-form-7-integration/page/contact-form-7-utm-tracking',
+            'utm_campaign' => 'CF7_Special_Deal'
+        ),
+        'Gravity Forms' => array(
+            'plugin_file' => 'gravityforms/gravityforms.php',
+            'premium_link' => 'https://utmgrabber.com/the-most-effective-utm-tracking-in-gravity-form/',
+            'docs_link' => 'https://docs.utmgrabber.com/books/gravity-forms-integration/page/gravity-forms-integration',
+            'utm_campaign' => 'GF_Special_Deal'
+        )
+    );
+
+    foreach ($integrations as $form_type => $integration_data) {
+        echo handl_generate_form_integration_section($form_type, $integration_data);
+    }
 }
 
 function HUG_Append_All($content) {
@@ -1034,5 +1215,187 @@ function handl_v3_generate_links($utm_campaign = '', $utm_source = 'WordPress_FR
     ),HANDL_UTM_V3_LINK);
 }
 
+function handl_add_utm_fields_tag_generator() {
+    // Check if Contact Form 7 is active
+    if (!class_exists('WPCF7')) {
+        return;
+    }
 
+    // Register the tag generator using wpcf7_add_tag_generator
+    if (function_exists('wpcf7_add_tag_generator')) {
+        wpcf7_add_tag_generator(
+            'utm-fields',
+            'UTM Fields (HandL) 🎯',
+            'handl-utm-fields-panel', // Added elm_id parameter
+            'handl_utm_fields_tag_generator_panel',
+            array('nameless' => 1)
+        );
+    }
+}
+
+function handl_utm_fields_tag_generator_panel($contact_form, $args = '') {
+    if (!$contact_form) {
+        return;
+    }
+
+    $args = wp_parse_args($args, array());
+    ?>
+    <style>
+    .handl-utm-fields-btn.button, .handl-utm-fields-btn {
+        background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%) !important;
+        color: #fff !important;
+        border: none !important;
+        border-color: transparent !important;
+        font-size: 14px !important;
+        font-weight: 500 !important;
+        border-radius: 4px !important;
+        box-shadow: 0 1px 3px rgba(39,174,96,0.10);
+        padding: 7px 18px 7px 32px !important;
+        transition: box-shadow 0.2s, transform 0.2s;
+        margin-bottom: 8px;
+        margin-top: 4px;
+        cursor: pointer;
+        letter-spacing: 0.01em;
+        display: inline-block;
+        min-height: 32px;
+    }
+    .handl-utm-fields-btn.button:hover, .handl-utm-fields-btn:hover {
+        box-shadow: 0 2px 8px rgba(39,174,96,0.18);
+        transform: translateY(-1px) scale(1.01);
+    }
+    .handl-utm-fields-btn .utm-icon {
+        margin-right: 8px;
+        width: 18px;
+        height: 18px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .handl-utm-desc {
+        background: #f6fafd;
+        border-left: 4px solid #27ae60;
+        padding: 14px 18px;
+        margin-bottom: 0;
+        font-size: 16px;
+        color: #222;
+        border-radius: 4px;
+        margin-top: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .handl-utm-desc .desc-icon {
+        color: #27ae60;
+        font-size: 22px;
+        margin-right: 6px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+    .handl-utm-reminder, .handl-zapier-reminder {
+        margin-top: 18px;
+        padding: 13px 18px;
+        border-radius: 4px;
+        font-size: 15px;
+        color: #222;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    .handl-utm-reminder {
+        background: #f8f9fa;
+        border-left: 4px solid #0073aa;
+    }
+    .handl-zapier-reminder {
+        background: #e7f7ed;
+        border-left: 4px solid #27ae60;
+    }
+    .handl-utm-reminder .reminder-icon, .handl-zapier-reminder .zapier-icon {
+        font-size: 20px;
+        margin-top: 2px;
+        margin-right: 6px;
+        color: #0073aa;
+        flex-shrink: 0;
+    }
+    .handl-zapier-reminder .zapier-icon {
+        color: #27ae60;
+    }
+    .handl-zapier-reminder ul {
+        margin: 8px 0 0 18px;
+        font-size: 95%;
+        color: #222;
+    }
+    .insert-box {
+        margin-top: 0;
+        margin-bottom: 0;
+        padding: 0;
+        text-align: left;
+    }
+    </style>
+    <div class="control-box">
+        <div class="handl-utm-reminder">
+            <span class="reminder-icon" aria-hidden="true">ℹ️</span>
+            <span><strong>Reminder:</strong> To receive UTM values in your email notifications, you must also add the corresponding mail tags (e.g., <code>[utm_source_cf7]</code>, <code>[utm_medium_cf7]</code>, etc.) in the <strong>Mail</strong> tab.<br>
+            <span style="font-size:90%;color:#666;">If you do not add these tags to your email template, the UTM values will not appear in the emails you receive.</span></span>
+        </div>
+        <div class="handl-zapier-reminder">
+            <span class="zapier-icon" aria-hidden="true">⚡</span>
+            <span><strong>Tip:</strong> You can also use our <a href="https://docs.utmgrabber.com/books/zapier-integration/chapter/zapier-for-contact-form-7" target="_blank">Zapier integration</a> to automatically send UTM and form data from this form to Zapier, and from there to your CRM, Google Sheets, or hundreds of other apps.<br>
+            <ul>
+                <li>Send new leads with UTM data directly to your CRM (e.g., HubSpot, Salesforce, Zoho)</li>
+                <li>Log every form submission with UTM info into a Google Sheet for easy reporting</li>
+                <li>Trigger automated email sequences based on campaign source</li>
+                <li>Track ad campaign performance by connecting to analytics or reporting tools</li>
+            </ul>
+            <span style="font-size:90%;color:#666;">Check the <a href="https://docs.utmgrabber.com/books/zapier-integration/chapter/zapier-for-contact-form-7" target="_blank">Zapier integration guide</a> for setup instructions and more ideas.</span></span>
+        </div>
+        <div class="insert-box">
+            <button type="button" class="button handl-utm-fields-btn insert-utm-fields">
+                <span class="utm-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="2" rx="1" fill="#fff"/><rect x="11" y="3" width="2" height="18" rx="1" fill="#fff"/><circle cx="12" cy="12" r="9.5" stroke="#fff" stroke-width="2"/></svg>
+                </span>
+                <?php echo esc_html(__('Insert UTM Fields', 'contact-form-7')); ?>
+            </button>
+        </div>
+        
+    </div>
+
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+        $('.insert-utm-fields').on('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            var formId = <?php echo $contact_form->id(); ?>;
+            var utmFields = [
+                '[hidden utm_source_cf7 utm_source_cf7-' + formId + ' class:utm_source id:utm_source]',
+                '[hidden utm_medium_cf7 utm_medium_cf7-' + formId + ' class:utm_medium id:utm_medium]',
+                '[hidden utm_term_cf7 utm_term_cf7-' + formId + ' class:utm_term id:utm_term]',
+                '[hidden utm_content_cf7 utm_content_cf7-' + formId + ' class:utm_content id:utm_content]',
+                '[hidden utm_campaign_cf7 utm_campaign_cf7-' + formId + ' class:utm_campaign id:utm_campaign]',
+                '[hidden gclid_cf7 gclid_cf7-' + formId + ' class:gclid id:gclid]'
+            ];
+
+            var content = $('#wpcf7-form').val();
+            var submitPos = content.indexOf('[submit');
+            if (submitPos === -1) {
+                submitPos = content.length;
+            }
+
+            // Remove any existing UTM fields
+            utmFields.forEach(function(field) {
+                var fieldName = field.match(/\[hidden ([^\s]+)/)[1];
+                content = content.replace(new RegExp('\\[hidden ' + fieldName + '[^\\]]*\\]', 'g'), '');
+            });
+
+            // Insert new UTM fields just before submit
+            var newContent = content.slice(0, submitPos) + '\n' + utmFields.join('\n') + '\n' + content.slice(submitPos);
+            $('#wpcf7-form').val(newContent);
+
+            tb_remove();
+            return false;
+        });
+    });
+    </script>
+    <?php
+}
+// Add the new hook
+add_action('admin_init', 'handl_add_utm_fields_tag_generator', 20);
 
