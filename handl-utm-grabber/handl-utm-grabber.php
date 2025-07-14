@@ -4,7 +4,7 @@ Plugin Name: HandL UTM Grabber
 Plugin URI: https://utmgrabber.com
 Description: The easiest way to capture UTMs on your (optin) forms.
 Author: Haktan Suren
-Version: 2.7.31
+Version: 2.7.32
 Author URI: https://www.utmgrabber.com/
 */
 
@@ -1221,12 +1221,21 @@ function handl_add_utm_fields_tag_generator() {
         return;
     }
 
-    // Register the tag generator using wpcf7_add_tag_generator
-    if (function_exists('wpcf7_add_tag_generator')) {
+    // Use the modern Contact Form 7 tag generator API
+    if (class_exists('WPCF7_TagGenerator')) {
+        $tag_generator = WPCF7_TagGenerator::get_instance();
+        $tag_generator->add(
+            'utm-fields',
+            'UTM Fields (HandL) 🎯',
+            'handl_utm_fields_tag_generator_panel',
+            array('nameless' => 1, 'version' => 2)
+        );
+    } elseif (function_exists('wpcf7_add_tag_generator')) {
+        // Fallback for older versions of Contact Form 7
         wpcf7_add_tag_generator(
             'utm-fields',
             'UTM Fields (HandL) 🎯',
-            'handl-utm-fields-panel', // Added elm_id parameter
+            'handl-utm-fields-panel',
             'handl_utm_fields_tag_generator_panel',
             array('nameless' => 1)
         );
@@ -1240,162 +1249,55 @@ function handl_utm_fields_tag_generator_panel($contact_form, $args = '') {
 
     $args = wp_parse_args($args, array());
     ?>
-    <style>
-    .handl-utm-fields-btn.button, .handl-utm-fields-btn {
-        background: linear-gradient(90deg, #27ae60 0%, #2ecc71 100%) !important;
-        color: #fff !important;
-        border: none !important;
-        border-color: transparent !important;
-        font-size: 14px !important;
-        font-weight: 500 !important;
-        border-radius: 4px !important;
-        box-shadow: 0 1px 3px rgba(39,174,96,0.10);
-        padding: 7px 18px 7px 32px !important;
-        transition: box-shadow 0.2s, transform 0.2s;
-        margin-bottom: 8px;
-        margin-top: 4px;
-        cursor: pointer;
-        letter-spacing: 0.01em;
-        display: inline-block;
-        min-height: 32px;
-    }
-    .handl-utm-fields-btn.button:hover, .handl-utm-fields-btn:hover {
-        box-shadow: 0 2px 8px rgba(39,174,96,0.18);
-        transform: translateY(-1px) scale(1.01);
-    }
-    .handl-utm-fields-btn .utm-icon {
-        margin-right: 8px;
-        width: 18px;
-        height: 18px;
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .handl-utm-desc {
-        background: #f6fafd;
-        border-left: 4px solid #27ae60;
-        padding: 14px 18px;
-        margin-bottom: 0;
-        font-size: 16px;
-        color: #222;
-        border-radius: 4px;
-        margin-top: 0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-    }
-    .handl-utm-desc .desc-icon {
-        color: #27ae60;
-        font-size: 22px;
-        margin-right: 6px;
-        display: inline-block;
-        vertical-align: middle;
-    }
-    .handl-utm-reminder, .handl-zapier-reminder {
-        margin-top: 18px;
-        padding: 13px 18px;
-        border-radius: 4px;
-        font-size: 15px;
-        color: #222;
-        display: flex;
-        align-items: flex-start;
-        gap: 10px;
-    }
-    .handl-utm-reminder {
-        background: #f8f9fa;
-        border-left: 4px solid #0073aa;
-    }
-    .handl-zapier-reminder {
-        background: #e7f7ed;
-        border-left: 4px solid #27ae60;
-    }
-    .handl-utm-reminder .reminder-icon, .handl-zapier-reminder .zapier-icon {
-        font-size: 20px;
-        margin-top: 2px;
-        margin-right: 6px;
-        color: #0073aa;
-        flex-shrink: 0;
-    }
-    .handl-zapier-reminder .zapier-icon {
-        color: #27ae60;
-    }
-    .handl-zapier-reminder ul {
-        margin: 8px 0 0 18px;
-        font-size: 95%;
-        color: #222;
-    }
-    .insert-box {
-        margin-top: 0;
-        margin-bottom: 0;
-        padding: 0;
-        text-align: left;
-    }
-    </style>
-    <div class="control-box">
-        <div class="handl-utm-reminder">
-            <span class="reminder-icon" aria-hidden="true">ℹ️</span>
-            <span><strong>Reminder:</strong> To receive UTM values in your email notifications, you must also add the corresponding mail tags (e.g., <code>[utm_source_cf7]</code>, <code>[utm_medium_cf7]</code>, etc.) in the <strong>Mail</strong> tab.<br>
-            <span style="font-size:90%;color:#666;">If you do not add these tags to your email template, the UTM values will not appear in the emails you receive.</span></span>
+    <div id="handl-utm-fields-panel" data-form-id="<?php echo esc_attr($contact_form->id()); ?>">
+        <header class="description-box">
+            <h3>UTM Fields (HandL) 🎯 form tag generator</h3>
+            <p>Insert UTM tracking fields into your Contact Form 7 form. These hidden fields will automatically capture UTM parameters from your visitors.</p>
+        </header>
+        <div class="control-box">
+            <div class="handl-utm-reminder">
+                <span class="reminder-icon" aria-hidden="true">ℹ️</span>
+                <span><strong>Reminder:</strong> To receive UTM values in your email notifications, you must also add the corresponding mail tags (e.g., <code>[utm_source_cf7]</code>, <code>[utm_medium_cf7]</code>, etc.) in the <strong>Mail</strong> tab.<br>
+                <span style="font-size:90%;color:#666;">If you do not add these tags to your email template, the UTM values will not appear in the emails you receive.</span></span>
+            </div>
+            <div class="handl-zapier-reminder">
+                <span class="zapier-icon" aria-hidden="true">⚡</span>
+                <span><strong>Tip:</strong> You can also use our <a href="https://docs.utmgrabber.com/books/zapier-integration/chapter/zapier-for-contact-form-7" target="_blank">Zapier integration</a> to automatically send UTM and form data from this form to Zapier, and from there to your CRM, Google Sheets, or hundreds of other apps.<br>
+                <ul>
+                    <li>Send new leads with UTM data directly to your CRM (e.g., HubSpot, Salesforce, Zoho)</li>
+                    <li>Log every form submission with UTM info into a Google Sheet for easy reporting</li>
+                    <li>Trigger automated email sequences based on campaign source</li>
+                    <li>Track ad campaign performance by connecting to analytics or reporting tools</li>
+                </ul>
+                <span style="font-size:90%;color:#666;">Check the <a href="https://docs.utmgrabber.com/books/zapier-integration/chapter/zapier-for-contact-form-7" target="_blank">Zapier integration guide</a> for setup instructions and more ideas.</span></span>
+            </div>
+            <fieldset>
+                <legend>
+                    <label for="insert-utm-fields">Insert UTM Fields</label>
+                </legend>
+                <div>
+                    <button type="button" class="button handl-utm-fields-btn" id="insert-utm-fields">
+                        <span class="utm-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="2" rx="1" fill="#fff"/><rect x="11" y="3" width="2" height="18" rx="1" fill="#fff"/><circle cx="12" cy="12" r="9.5" stroke="#fff" stroke-width="2"/></svg>
+                        </span>
+                        <?php echo esc_html(__('Insert UTM Fields', 'contact-form-7')); ?>
+                    </button>
+                </div>
+            </fieldset>
         </div>
-        <div class="handl-zapier-reminder">
-            <span class="zapier-icon" aria-hidden="true">⚡</span>
-            <span><strong>Tip:</strong> You can also use our <a href="https://docs.utmgrabber.com/books/zapier-integration/chapter/zapier-for-contact-form-7" target="_blank">Zapier integration</a> to automatically send UTM and form data from this form to Zapier, and from there to your CRM, Google Sheets, or hundreds of other apps.<br>
-            <ul>
-                <li>Send new leads with UTM data directly to your CRM (e.g., HubSpot, Salesforce, Zoho)</li>
-                <li>Log every form submission with UTM info into a Google Sheet for easy reporting</li>
-                <li>Trigger automated email sequences based on campaign source</li>
-                <li>Track ad campaign performance by connecting to analytics or reporting tools</li>
-            </ul>
-            <span style="font-size:90%;color:#666;">Check the <a href="https://docs.utmgrabber.com/books/zapier-integration/chapter/zapier-for-contact-form-7" target="_blank">Zapier integration guide</a> for setup instructions and more ideas.</span></span>
-        </div>
-        <div class="insert-box">
-            <button type="button" class="button handl-utm-fields-btn insert-utm-fields">
-                <span class="utm-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="2" rx="1" fill="#fff"/><rect x="11" y="3" width="2" height="18" rx="1" fill="#fff"/><circle cx="12" cy="12" r="9.5" stroke="#fff" stroke-width="2"/></svg>
-                </span>
-                <?php echo esc_html(__('Insert UTM Fields', 'contact-form-7')); ?>
-            </button>
-        </div>
-        
     </div>
-
-    <script type="text/javascript">
-    jQuery(document).ready(function($) {
-        $('.insert-utm-fields').on('click', function(event) {
-            event.preventDefault();
-            event.stopPropagation();
-            var formId = <?php echo $contact_form->id(); ?>;
-            var utmFields = [
-                '[hidden utm_source_cf7 utm_source_cf7-' + formId + ' class:utm_source id:utm_source]',
-                '[hidden utm_medium_cf7 utm_medium_cf7-' + formId + ' class:utm_medium id:utm_medium]',
-                '[hidden utm_term_cf7 utm_term_cf7-' + formId + ' class:utm_term id:utm_term]',
-                '[hidden utm_content_cf7 utm_content_cf7-' + formId + ' class:utm_content id:utm_content]',
-                '[hidden utm_campaign_cf7 utm_campaign_cf7-' + formId + ' class:utm_campaign id:utm_campaign]',
-                '[hidden gclid_cf7 gclid_cf7-' + formId + ' class:gclid id:gclid]'
-            ];
-
-            var content = $('#wpcf7-form').val();
-            var submitPos = content.indexOf('[submit');
-            if (submitPos === -1) {
-                submitPos = content.length;
-            }
-
-            // Remove any existing UTM fields
-            utmFields.forEach(function(field) {
-                var fieldName = field.match(/\[hidden ([^\s]+)/)[1];
-                content = content.replace(new RegExp('\\[hidden ' + fieldName + '[^\\]]*\\]', 'g'), '');
-            });
-
-            // Insert new UTM fields just before submit
-            var newContent = content.slice(0, submitPos) + '\n' + utmFields.join('\n') + '\n' + content.slice(submitPos);
-            $('#wpcf7-form').val(newContent);
-
-            tb_remove();
-            return false;
-        });
-    });
-    </script>
     <?php
 }
 // Add the new hook
 add_action('admin_init', 'handl_add_utm_fields_tag_generator', 20);
+
+add_action('admin_enqueue_scripts', function() {
+    global $pagenow;
+    if (
+        $pagenow === 'admin.php' &&
+        isset($_GET['page']) && $_GET['page'] === 'wpcf7'
+    ) {
+        wp_enqueue_script('handl-utm-grabber-admin');
+    }
+});
 
