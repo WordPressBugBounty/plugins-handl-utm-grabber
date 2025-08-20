@@ -4,9 +4,11 @@ Plugin Name: HandL UTM Grabber
 Plugin URI: https://utmgrabber.com
 Description: The easiest way to capture UTMs on your (optin) forms.
 Author: Haktan Suren
-Version: 2.7.32
+Version: 2.8
 Author URI: https://www.utmgrabber.com/
 */
+
+use Handl\UtmrabberFree\Admin\Handl_React_Pages_Manager;
 
 define( 'HANDL_UTM_V3_LINK', 'https://utmgrabber.com' );
 define( 'PREMIUM_FEATURES', ['Organic Traffic (Google, Bing etc.)', 'Google Ads (ValueTrack Params e.g. keyword)' , 'Facebook Ads (fbclid)', 'Traffic Source (Paid, Organic, Referrer, Direct)','First/Last attribution', 'Microsoft Ads (msclkid)', 'Affiliate Marketing']);
@@ -115,16 +117,6 @@ add_filter( "acf/load_value/name=url", "handl_utm_grabber_couponhunt_theme_suppo
 
 function handl_utm_grabber_menu() {
 
-    add_menu_page(
-        'HandL UTM Grabber',
-        'UTM',
-        'manage_options',
-        'handl-utm-grabber.php',
-        'handl_utm_grabber_menu_page',
-        get_icon_svg_handl(),
-        '99.3875'
-    );
-
 	add_submenu_page(
 		'handl-utm-grabber.php',
 		'Apps',
@@ -149,24 +141,24 @@ function handl_utm_grabber_menu() {
         '<span style="font-size: 17px"></span> Premium',
         'manage_options',
         'handl_go_premium',
-        'handl_go_premium'
+        '__return_null'
     );
-
-	add_action( 'admin_init', 'register_handl_utm_grabber_settings' );
 }
 add_action( 'admin_menu', 'handl_utm_grabber_menu' );
 
-function handl_go_premium(){
-
-    if ( empty( $_GET['page'] ) ) {
-        return;
-    }
-
-    if ( 'handl_go_premium' === $_GET['page'] ) {
-        wp_redirect( handl_v3_generate_links('HandL_Go_Premium_Link','','wordpress_menu_link') ) ;
-        die;
-    }
+function handl_premium_link_new_tab() {
+    ?>
+    <script type="text/javascript">
+        jQuery(document).ready(function($) {
+            // Find the Premium menu link and add ID, then modify it to open in new tab
+            $('a[href*="handl_go_premium"]').attr('id', 'handl-premium-link').attr('target', '_blank').attr('href', '<?php echo (handl_v3_generate_links('HandL_Go_Premium_Link','','wordpress_menu_link')); ?>');
+        });
+    </script>
+    <?php
 }
+add_action( 'admin_footer', 'handl_premium_link_new_tab' );
+
+
 
 function handl_apps(){
     wp_enqueue_script('handl-utm-grabber-admin');
@@ -210,7 +202,7 @@ function handl_apps(){
                 display: block;
                 margin: 0 auto;
             }
-           
+
             #handl-utm-apps .card .container {
                 padding: 15px;
                 flex: 1;
@@ -248,7 +240,7 @@ function handl_apps(){
                 </a>
                 <div class="container">
                     <a target="_blank" href="https://docs.utmgrabber.com/books/103-internal-apps/page/handl-gclid-reporter?utm_campaign=HandLGCLIDReporter&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
-                        <h4>
+                    <h4>
                             <b>GCLID Reporter</b>
                         </h4>
                     </a>
@@ -328,244 +320,7 @@ function handl_kb(){
 }
 
 
-function handl_on_admin_init(){
-    handl_go_premium();
-}
-add_action( 'admin_init', 'handl_on_admin_init');
 
-
-function register_handl_utm_grabber_settings() {
-	register_setting( 'handl-utm-grabber-settings-group', 'hug_append_all' );
-	register_setting( 'handl-utm-grabber-settings-group', 'hug_zapier_url' );
-	register_setting( 'handl-utm-grabber-settings-group', 'hug_httponly_cookies' ); // Add new setting
-}
-
-function handl_utm_grabber_menu_page(){
-//    wp_enqueue_style('handl-utm-grabber-admin-css');
-    wp_enqueue_script('handl-utm-grabber-admin');
-?>
-	<div class='wrap' id="handl-utm-menu">
-		<h2><span class="dashicons dashicons-admin-settings" style='line-height: 1.1;font-size: 30px; padding-right: 10px;'></span> HandL UTM Grabber: Settings</h2>
-		<form method='post' action='options.php'>
-			<?php settings_fields( 'handl-utm-grabber-settings-group' ); ?>
-			<?php do_settings_sections( 'handl-utm-grabber-settings-group' ); ?>
-			<table class='form-table'>
-				<tr>
-					<th scope='row'>Append UTM</th>
-					<td>
-						<fieldset>
-							<legend class='screen-reader-text'>
-								<span>Append UTM</span>
-							</legend>
-							<label for='hug_append_all'>
-								<input name='hug_append_all' id='hug_append_all' type='checkbox' value='1' <?php print checked( '1', get_option( 'hug_append_all' ) ) ?> />
-								Append UTM variables to all the links automatically (BETA)
-							</label>
-							<p class='description' id='handl-utm-grabber-append-all-description'>This feature is still in BETA, please give us feedback <a target='blank' href='https://www.utmgrabber.com/?utm_campaign=HandL+UTM+Grabber+Feedback&utm_content=Append+All+Feedback'>via chat here</a></p>
-						</fieldset>
-					</td>
-				</tr>
-				<tr>
-					<th scope='row'>Zapier Webhook URL</th>
-					<td>
-				        <fieldset>
-							<legend class='screen-reader-text'>
-								<span>Set Up Zapier!</span>
-							</legend>
-							<label for='hug_zapier_url'>
-								<input style="width: 500px" name='hug_zapier_url' id='hug_zapier_url' type='text' value='<?php print get_option( 'hug_zapier_url' ) ? get_option( 'hug_zapier_url' ) : '' ?>'/>
-							</label>
-							<p class='description' id='handl-utm-grabber-zapier-description'>Check out the website to <a target='blank' href='https://docs.utmgrabber.com/books/zapier-integration/?utm_campaign=HandL+UTM+Grabber+Feedback&utm_content=Zapier'>learn more...</a></p>
-							<?php if ( get_option( 'hug_zapier_log' ) ){ ?>
-							<button class="accordion" type="button">View Zapier Log (Latest Call Made)</button>
-                            <div class="panel">
-                                <pre><?php print_r(get_option( 'hug_zapier_log' )); ?></pre>
-                            </div>
-							<?php } ?>
-						</fieldset>
-					</td>
-				</tr>
-				<tr>
-					<th scope='row'>Enhanced Security Mode</th>
-					<td>
-						<fieldset>
-							<legend class='screen-reader-text'>
-								<span>Enhanced Security Mode</span>
-							</legend>
-							<label for='hug_httponly_cookies'>
-								<input name='hug_httponly_cookies' id='hug_httponly_cookies' type='checkbox' value='1' <?php print checked( '1', get_option( 'hug_httponly_cookies' ) ) ?> />
-								Enable HttpOnly cookies (Enhanced Security Mode)
-							</label>
-							<p class='description' id='handl-utm-grabber-httponly-description' style="color: #d63638;">
-								<b>Warning:</b> Only enable this if you know exactly what you're doing. When enabled, this makes your cookies more secure by preventing JavaScript access, but it may cause some tracking data to be lost.
-							</p>
-						</fieldset>
-					</td>
-				</tr>
-			</table>
-
-			<?php submit_button(); ?>
-		</form>
-
-        <?php handl_display_form_integrations(); ?>
-
-        <div class="utm-notifications">
-            <h3>Notifications</h3>
-            <?php
-            $notifications = getHandLNotifications();
-            foreach ($notifications as $key=>$n) {
-                $nonce = wp_create_nonce($key);
-                $ishide = get_user_option($key."_read");
-                if (!$ishide) {
-	                printf( "
-                    <div class='handl-notification-holder'>
-                        <div class='handl-notification'>%s</div>
-                        <div class='handl-button'><a href='#' class='dismiss-handl-notification' data-hide='1' data-id='%s' data-nonce='%s'><span class='dashicons dashicons-hidden'></span></a></div>
-                    </div>",
-		                $n,
-		                $key,
-		                $nonce
-	                );
-                }
-            }
-            ?>
-            <script>
-                jQuery(document).on( 'click', '.dismiss-handl-notification', function() {
-                    var thiss = jQuery(this)
-                    jQuery.post(
-                        ajaxurl,
-                        {
-                            'action': 'handl_mark_read_notifications',
-                            'nonce': jQuery(this).data('nonce'),
-                            'id': jQuery(this).data('id'),
-                            'hide': jQuery(this).data('hide')
-                        }
-                    ).done(function( data ) {
-                        var data = JSON.parse(data)
-                        if (data.success){
-                            thiss.parent().parent().remove()
-                        }
-                    });
-
-
-                })
-            </script>
-    <!--        <p style="font-size:1.25em">🚨🚨🚨 <b>LIMITED TIME:</b> We are <b>doubling the number of licenses</b> for any plan only for the WP community. <a target="_blank" href="--><?php //print handl_v3_generate_links('4WPCommunity', '', 'wordpress_settings_page'); ?><!--">Click here</a> to score the deal. <b>Limited seat</b> available, act now!</p>-->
-        </div>
-
-        <div class="handl-upsell">
-            <h2>Upgrade To HandL UTM Grabber V3</h2>
-            <ul>
-                <li>Track <b>all</b> UTM and custom parameters</li>
-                <li>Google Ads <b>ValueTrack</b> Tracking</li>
-                <li><b>Facebook Ads</b> Tracking</li>
-                <li><b>First/Last touch</b> tracking</b></li>
-                <li>Adjust <b>cookie time</b> as you wish</li>
-                <li>Latest Wordpress &amp; PHP <b>7.4</b> Support</li>
-                <li><b>Server &amp; client side</b> tracking</li>
-                <li>EU GDPR <b>compliant</b> tracking</li>
-                <li>Support for many major <b>opt-in forms</b></li>
-                <li>Tracks <b>clientid</b> from Google Analytics</li>
-                <li>Track source from <b>Organic</b> Traffic</li>
-                <li>Seemless across <b>subdomain/domain-level tracking</b></li>
-                <li>Pass <b>all tracked data</b> to different domains/iframes</li>
-                <li><b>WooCommerce</b> Support</li>
-                <li>Google <b>offline conversions</b></li>
-                <li>Site 2 Site <b>(S2S) Postback</b></li>
-                <li>Facebook <b>offline conversions</b></li>
-                <li>And many more...</li>
-
-            </ul>
-            <a href="<?php print handl_v3_generate_links('HandL_Get_Premium_Button','','wordpress_settings_page'); ?>" target="_blank" class="handl-btn">Upgrade to V3</a>
-        </div>
-	</div>
-<?php
-}
-
-function handl_generate_form_integration_section($form_type, $integration_data) {
-    if (!is_plugin_active($integration_data['plugin_file'])) {
-        return '';
-    }
-
-    $icon_color = '#2271b1';
-    $border_color = '#2271b1';
-    $premium_link = $integration_data['premium_link'];
-    $docs_link = $integration_data['docs_link'];
-    $utm_campaign = $integration_data['utm_campaign'];
-    $site_health_url = admin_url('site-health.php');
-
-    ob_start();
-    ?>
-    <div class="handl-form-integration" style="margin-top: 30px; padding: 20px; background: #fff; border: 1px solid #ccd0d4; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
-        <h3 style="margin-top: 0;">
-            <span class="dashicons dashicons-forms" style="color: <?php echo esc_attr($icon_color); ?>;"></span> 
-            <?php echo esc_html($form_type); ?> Integration
-        </h3>
-        
-        <div style="background: #f0f6fc; padding: 15px; border-left: 4px solid <?php echo esc_attr($border_color); ?>; margin: 15px 0;">
-            <p style="margin: 0 0 10px 0;">
-                <strong>🎯 Ready to track your form submissions?</strong> 
-                Follow these steps to integrate UTM tracking with <?php echo esc_html($form_type); ?>:
-            </p>
-            <ol style="margin: 0 0 0 20px;">
-                <li>Add hidden fields to your form for each UTM parameter you want to track</li>
-                <li>Set the field input names to match our UTM parameters (utm_source, utm_medium, etc.)</li>
-                <li>Configure your form notifications to include the UTM data</li>
-            </ol>
-        </div>
-
-        <div style="background: #e7f7ed; padding: 15px; border-left: 4px solid #27ae60; margin: 15px 0;">
-            <p style="margin: 0;">
-                <strong>🔍 Pro Tip:</strong> Check your <a href="<?php echo esc_url($site_health_url); ?>" target="_blank">Site Health</a> page for UTM-specific recommendations and warnings. 
-                This will help you identify any potential issues with your UTM tracking setup and ensure you're following best practices.
-            </p>
-        </div>
-
-        <p>
-            <a href="<?php echo esc_url($docs_link); ?>" target="_blank" class="button button-primary">
-                View Integration Guide 
-                <span class="dashicons dashicons-external" style="vertical-align: middle;"></span>
-            </a>
-        </p>
-
-        <div style="background: #fff8e5; padding: 15px; border-left: 4px solid #dba617; margin-top: 15px;">
-            <p style="margin: 0;">
-                <strong>ℹ️ Note:</strong> The free version allows you to track paid advertising campaigns. 
-                For advanced tracking features including organic traffic, social media, affiliate marketing, and more, 
-                consider upgrading to 
-                <a href="<?php echo esc_url($premium_link); ?>?utm_campaign=<?php echo esc_attr($utm_campaign); ?>&utm_source=WordPress_FREE&utm_medium=settings_page" 
-                   target="_blank" 
-                   style="color: <?php echo esc_attr($icon_color); ?>; text-decoration: underline;">
-                    HandL UTM Grabber V3
-                </a>. 
-                All premium plans come with a 14-day money-back guarantee.
-            </p>
-        </div>
-    </div>
-    <?php
-    return ob_get_clean();
-}
-
-function handl_display_form_integrations() {
-    $integrations = array(
-        'Contact Form 7' => array(
-            'plugin_file' => 'contact-form-7/wp-contact-form-7.php',
-            'premium_link' => 'https://utmgrabber.com/contact-form-7-utm-tracking/',
-            'docs_link' => 'https://docs.utmgrabber.com/books/contact-form-7-integration/page/contact-form-7-utm-tracking',
-            'utm_campaign' => 'CF7_Special_Deal'
-        ),
-        'Gravity Forms' => array(
-            'plugin_file' => 'gravityforms/gravityforms.php',
-            'premium_link' => 'https://utmgrabber.com/the-most-effective-utm-tracking-in-gravity-form/',
-            'docs_link' => 'https://docs.utmgrabber.com/books/gravity-forms-integration/page/gravity-forms-integration',
-            'utm_campaign' => 'GF_Special_Deal'
-        )
-    );
-
-    foreach ($integrations as $form_type => $integration_data) {
-        echo handl_generate_form_integration_section($form_type, $integration_data);
-    }
-}
 
 function HUG_Append_All($content) {
   if ($content != '' && get_option('hug_append_all') == 1) {
@@ -588,7 +343,7 @@ function HUG_Append_All($content) {
         
         // Sanitize URL
         $a_original = esc_url($a_original);
-        
+
         // Only proceed if URL is valid
         if (!filter_var($a_original, FILTER_VALIDATE_URL) && !preg_match('/^\//', $a_original)) {
           continue;
@@ -1147,65 +902,6 @@ function get_test_handl_nf_shortcodes_used() {
     );
 }
 
-function handl_utm_add_menu( WP_Admin_Bar $wp_admin_bar ){
-    if (current_user_can('administrator')){
-	    $handl_notifications = getHandLNotifications();
-	    foreach ($handl_notifications as $key=>$n) {
-		    if ( get_user_option( $key . "_read" ) )
-			    unset($handl_notifications[$key]);
-	    }
-
-	    $notifications = '';
-	    if (sizeof($handl_notifications) > 0){
-		    $notifications = '<div class="wp-core-ui wp-ui-notification handl-issue-counter"><span aria-hidden="true">'.sizeof($handl_notifications).'</span><span class="screen-reader-text">'.sizeof($handl_notifications).' notification</span></div>';
-	    }
-
-
-	    $admin_bar_menu_args = [
-		    'id'    => 'handl-utm-grabber',
-		    'title' => '<div class="wp-menu-image svg handl-svg" style="background-image: url(\''.get_icon_svg_handl().'\')"></div>UTM '.$notifications,
-		    'href'  => admin_url( 'admin.php?page=handl-utm-grabber.php' ),
-	    ];
-	    $wp_admin_bar->add_menu( $admin_bar_menu_args );
-    }
-}
-//Coming Soon
-add_action( 'admin_bar_menu', 'handl_utm_add_menu', 90 );
-
-function getHandLNotifications(){
-    return [
-//	    'black_friday_2020_double' => '🎁 💰 <b>Black Friday Sale is ON</b> Don\'t miss the biggest sale of the year. <a target="_blank" href="'.handl_v3_generate_links("BlackFriday2020", "", "wordpress_notification").'">Click here</a> to get <b>50% off</b>. Limited availability. Act now!',
-//        'black_friday_2022_20off' => '💵 <b>OUR BIGGEST SALE EVER:</b> 20% OFF on all plans. <a target="_blank" href="'.handl_v3_generate_links("BF22", "wordpress", "wordpress_notification").'">Click here</a> to lock your deal.',
-	    'ios14_privacy' => ' Are you ready for the new IOS 14 privacy related changes? <a href="https://docs.utmgrabber.com/books/102-getting-started-for-handl-utm-grabber-v3/page/what-does-new-ios-14-release-privacy-change-in-terms-of-tracking?utm_campaign=IOS14Privacy&utm_source=WordPress_FREE&utm_medium=wordpress_settings_page" target="_blank">Click here</a> to learn what the new changes mean to you',
-	    'gclid_reporter' => '📈 Are you collecting <b>GCLID?</b> <a href="https://docs.utmgrabber.com/books/103-internal-apps/page/handl-gclid-reporter?utm_campaign=HandLGCLIDReporter&utm_source=WordPress_FREE&utm_medium=wordpress_settings_page" target="_blank">Click here</a> to generate your <b>GCLID</b> report for FREE (temporarily)',
-        'free_audit' => '🔍 Get your <a href="https://handldigital.com/free-utm-audit/?utm_campaign=UTMAudit&utm_source=WordPress_FREE&utm_medium=wordpress_settings_page" target="_blank">FREE marketing/UTM audit</a> here. 100% human reply. No credit card required.',
-        'documentation' => '📚 Have you seen our knowledge-base site? <a target="_blank" href="https://docs.utmgrabber.com/books?utm_campaign=HandLDocumentation&utm_source=WordPress_FREE&utm_medium=wordpress_notification">Click here</a> to access.',
-        'dr_utm_1st' => '🩺 <b>Dr. UTM Lab</b>: a YouTube Series to teach integrating tracking solutions end to end (form and CRM agnostic way). <a target="_blank" href="https://www.youtube.com/watch?v=rcyWRrx_PZc">Click here</a> to access.',
-    ];
-}
-
-function handl_mark_read_notifications() {
-    $response = [];
-    $response['success'] = 0;
-    if (isset($_POST) && isset($_POST['nonce']) && isset($_POST['id']) && is_admin() && current_user_can('administrator') ){
-        $key = $_POST['id'];
-        $nonce = $_POST['nonce'];
-//	    $state = $_POST['hide'] ? 0 : 1;
-
-        if (wp_verify_nonce($nonce, $key)){
-	        $notifications = getHandLNotifications();
-	        if (isset($notifications[$key])){
-		        $user_meta_key = $key."_read";
-		        update_user_option( get_current_user_id(), $user_meta_key, 1 );
-		        $response['success'] = 1;
-	        }
-        }
-    }
-    echo json_encode($response);
-	exit();
-}
-add_action( 'wp_ajax_handl_mark_read_notifications', 'handl_mark_read_notifications' );
-
 function handl_v3_generate_links($utm_campaign = '', $utm_source = 'WordPress_FREE', $utm_medium = ''){
     $utm_source = $utm_source != '' ? $utm_source : 'WordPress_FREE';
     return add_query_arg(array(
@@ -1214,7 +910,6 @@ function handl_v3_generate_links($utm_campaign = '', $utm_source = 'WordPress_FR
         "utm_medium" => $utm_medium
     ),HANDL_UTM_V3_LINK);
 }
-
 function handl_add_utm_fields_tag_generator() {
     // Check if Contact Form 7 is active
     if (!class_exists('WPCF7')) {
@@ -1277,9 +972,7 @@ function handl_utm_fields_tag_generator_panel($contact_form, $args = '') {
                 </legend>
                 <div>
                     <button type="button" class="button handl-utm-fields-btn" id="insert-utm-fields">
-                        <span class="utm-icon" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" fill="none" width="24" height="24" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="11" width="18" height="2" rx="1" fill="#fff"/><rect x="11" y="3" width="2" height="18" rx="1" fill="#fff"/><circle cx="12" cy="12" r="9.5" stroke="#fff" stroke-width="2"/></svg>
-                        </span>
+                        <span class="utm-icon" aria-hidden="true"></span>
                         <?php echo esc_html(__('Insert UTM Fields', 'contact-form-7')); ?>
                     </button>
                 </div>
@@ -1288,7 +981,6 @@ function handl_utm_fields_tag_generator_panel($contact_form, $args = '') {
     </div>
     <?php
 }
-// Add the new hook
 add_action('admin_init', 'handl_add_utm_fields_tag_generator', 20);
 
 add_action('admin_enqueue_scripts', function() {
@@ -1300,4 +992,11 @@ add_action('admin_enqueue_scripts', function() {
         wp_enqueue_script('handl-utm-grabber-admin');
     }
 });
+if (is_admin()) {
+    require_once "includes/admin/react-admin.php";
+    new Handl_React_Pages_Manager();
+}
+require_once "includes/admin/handl-options.php";
+
+
 

@@ -36,11 +36,180 @@
   transition: max-height 0.2s ease-out;
 }
 
+body.admin-color-fresh #adminmenu #toplevel_page_handl-utm-grabber #handl-premium-link,
 body.admin-color-fresh #adminmenu #toplevel_page_handl-utm-grabber a[href="admin.php?page=handl_go_premium"]
 {
   color: #eeff00;
   font-weight: 500;
 }
+
+/* UTM Fields Panel Styling - Modal Style */
+#handl-utm-fields-panel {
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  margin: auto auto;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+#handl-utm-fields-panel .description-box {
+  background: #2271b1;
+  color: white;
+  padding: 20px;
+  margin: 0;
+  position: relative;
+}
+
+#handl-utm-fields-panel .description-box h3 {
+  margin: 0 0 8px 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: white;
+}
+
+#handl-utm-fields-panel .description-box p {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
+#handl-utm-fields-panel .control-box {
+  padding: 24px 24px 30px 24px;
+}
+
+/* Info and Tip Sections */
+.handl-utm-reminder,
+.handl-zapier-reminder {
+  background: #f8f9fa;
+  border-left: 4px solid #2271b1;
+  padding: 16px;
+  margin: 0 0 20px 0;
+  border-radius: 0 4px 4px 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.handl-zapier-reminder {
+  border-left-color: #00a32a;
+  background: #f6fff8;
+}
+
+.reminder-icon,
+.zapier-icon {
+  font-size: 16px;
+  margin-right: 8px;
+  vertical-align: top;
+  display: inline-block;
+}
+
+.handl-utm-reminder strong,
+.handl-zapier-reminder strong {
+  color: #1d2327;
+  font-weight: 600;
+}
+
+.handl-utm-reminder code {
+  background: #e1e1e1;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+}
+
+.handl-zapier-reminder ul {
+  margin: 12px 0 8px 0;
+  padding-left: 20px;
+}
+
+.handl-zapier-reminder li {
+  margin: 4px 0;
+}
+
+.handl-zapier-reminder a {
+  color: #2271b1;
+  text-decoration: none;
+}
+
+.handl-zapier-reminder a:hover {
+  text-decoration: underline;
+}
+
+/* Button Styling */
+#handl-utm-fields-panel fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+#handl-utm-fields-panel legend {
+  display: none;
+}
+
+.handl-utm-fields-btn {
+  background: #00a32a !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 12px 24px !important;
+  font-size: 16px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  justify-content: center !important;
+  box-shadow: 0 2px 4px rgba(0, 163, 42, 0.2) !important;
+  transition: all 0.2s ease !important;
+}
+
+.handl-utm-fields-btn:hover {
+  background: #008a2e !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px rgba(0, 163, 42, 0.3) !important;
+}
+
+.handl-utm-fields-btn:active {
+  transform: translateY(0) !important;
+}
+
+.handl-utm-fields-btn .utm-icon {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  position: relative;
+  border: 2px solid white;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.handl-utm-fields-btn .utm-icon::before,
+.handl-utm-fields-btn .utm-icon::after {
+  content: '';
+  position: absolute;
+  background: white;
+  border-radius: 1px;
+}
+
+.handl-utm-fields-btn .utm-icon::before {
+  width: 10px;
+  height: 2px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.handl-utm-fields-btn .utm-icon::after {
+  width: 2px;
+  height: 10px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 
 .handl-upsell{
   box-shadow: 0 1px 6px 0 rgba(0,0,0,.3);
