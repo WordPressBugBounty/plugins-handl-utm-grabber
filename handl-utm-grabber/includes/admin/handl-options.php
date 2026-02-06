@@ -1,5 +1,8 @@
 <?php
 namespace Handl\UtmrabberFree\Admin;
+
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 // add_action('admin_init', function() {
 // 	delete_option("hug_httponly_cookies");
 // 	delete_option("hug_append_all");
@@ -17,7 +20,7 @@ function handl_register_legacy_options() {
 			'default'           => '',
 			'show_in_rest'      => [ 'schema' => [ 'type' => 'string' ] ],
 			'description'       => 'Append all UTM parameters to all links',
-		],
+		]
 	);
 
 	register_setting(

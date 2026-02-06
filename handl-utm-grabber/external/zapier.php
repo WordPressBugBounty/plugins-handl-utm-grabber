@@ -1,4 +1,6 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 //Contact Form 7 Support
 function hug_wpcf7_submit( $instance, $result ) { 
     if ( $zapier_url = get_option( 'hug_zapier_url' ) ){     

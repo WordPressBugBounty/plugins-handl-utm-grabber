@@ -1,6 +1,8 @@
 <?php
 namespace Handl\UtmrabberFree\Admin;
 
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 class Handl_React_Pages_Manager
 {
     private $plugin_path;
@@ -46,7 +48,7 @@ class Handl_React_Pages_Manager
             $analytics_menu_title,
             'manage_options',
             'handl_analytics',
-            [ $this, 'render_analytics_page' ],
+            [ $this, 'render_analytics_page' ]
         );
 
     }

@@ -1,10 +1,12 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
+
 /*
 Plugin Name: HandL UTM Grabber
 Plugin URI: https://utmgrabber.com
 Description: The easiest way to capture UTMs on your (optin) forms.
 Author: Haktan Suren
-Version: 2.8
+Version: 2.8.3
 Author URI: https://www.utmgrabber.com/
 */
 
@@ -15,6 +17,10 @@ define( 'PREMIUM_FEATURES', ['Organic Traffic (Google, Bing etc.)', 'Google Ads 
 
 require_once "external/zapier.php";
 require_once "gf-handl-field.php";
+
+foreach (glob(plugin_dir_path(__FILE__) . 'lite/*.php') as $lite_integration_file) {
+    require_once $lite_integration_file;
+}
 
 add_filter('widget_text', 'do_shortcode');
 
@@ -45,11 +51,12 @@ function CaptureUTMs(){
 
     $cookie_field = '';
 	foreach ($fields as $id=>$field){
-		if (isset($_GET[$field]) && $_GET[$field] != '')
-			$cookie_field = htmlspecialchars($_GET[$field],ENT_QUOTES, 'UTF-8');
-		elseif(isset($_COOKIE[$field]) && $_COOKIE[$field] != ''){
+		if (isset($_GET[$field]) && $_GET[$field] != '') {
+			// Sanitize input (sanitize early)
+			$cookie_field = sanitize_text_field($_GET[$field]);
+		} elseif(isset($_COOKIE[$field]) && $_COOKIE[$field] != ''){
 			$cookie_field = $_COOKIE[$field];
-		}else{
+		} else {
 			$cookie_field = '';
 		}
 
@@ -79,11 +86,29 @@ function CaptureUTMs(){
 
 		$_COOKIE[$field] = $cookie_field;
 
-		add_shortcode($field, function() use ($field) {return urldecode($_COOKIE[$field]);});
-		add_shortcode($field."_i", function($atts,$content) use ($field) {return sprintf($content,urldecode($_COOKIE[preg_replace("/_i$/","",$field)]));});
+		// SECURITY FIX: Escape output late with esc_html (works for all content types)
+		add_shortcode($field, function() use ($field) {
+			if (!isset($_COOKIE[$field])) {
+				return '';
+			}
+			return esc_html($_COOKIE[$field]);
+		});
+		
+		add_shortcode($field."_i", function($atts,$content) use ($field) {
+			$clean_field = preg_replace("/_i$/", "", $field);
+			if (!isset($_COOKIE[$clean_field])) {
+				return '';
+			}
+			return sprintf($content, esc_html($_COOKIE[$clean_field]));
+		});
 
 		//This is for Gravity Forms
-		add_filter( 'gform_field_value_'.$field, function() use ($field) {return urldecode($_COOKIE[$field]); } );
+		add_filter( 'gform_field_value_'.$field, function() use ($field) {
+			if (!isset($_COOKIE[$field])) {
+				return '';
+			}
+			return esc_html($_COOKIE[$field]);
+		});
 	}
 }
 
@@ -151,7 +176,7 @@ function handl_premium_link_new_tab() {
     <script type="text/javascript">
         jQuery(document).ready(function($) {
             // Find the Premium menu link and add ID, then modify it to open in new tab
-            $('a[href*="handl_go_premium"]').attr('id', 'handl-premium-link').attr('target', '_blank').attr('href', '<?php echo (handl_v3_generate_links('HandL_Go_Premium_Link','','wordpress_menu_link')); ?>');
+            $('a[href*="handl_go_premium"]').attr('id', 'handl-premium-link').attr('target', '_blank').attr('href', '<?php echo esc_url( handl_v3_generate_links('HandL_Go_Premium_Link','','wordpress_menu_link') ); ?>');
         });
     </script>
     <?php
@@ -236,7 +261,7 @@ function handl_apps(){
         <div class="cards-container">
             <div class="card">
                 <a target="_blank" href="https://docs.utmgrabber.com/books/103-internal-apps/page/handl-gclid-reporter?utm_campaign=HandLGCLIDReporter&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
-                    <img src="<?php print(plugins_url('img/gclid_reporter.png',__FILE__));?>"></img>
+                    <img src="<?php echo esc_url( plugins_url( 'img/gclid_reporter.png', __FILE__ ) ); ?>"></img>
                 </a>
                 <div class="container">
                     <a target="_blank" href="https://docs.utmgrabber.com/books/103-internal-apps/page/handl-gclid-reporter?utm_campaign=HandLGCLIDReporter&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
@@ -250,7 +275,7 @@ function handl_apps(){
 
             <div class="card">
                 <a target="_blank" href="https://docs.utmgrabber.com/books/103-internal-apps/page/ai-powered-report-insight?utm_campaign=HandLAIInsight&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
-                    <img src="<?php print(plugins_url('img/ai_insight.png',__FILE__));?>"></img>
+                    <img src="<?php echo esc_url( plugins_url( 'img/ai_insight.png', __FILE__ ) ); ?>"></img>
                 </a>
                 <div class="container">
                     <a target="_blank" href="https://docs.utmgrabber.com/books/103-internal-apps/page/ai-powered-report-insight?utm_campaign=HandLAIInsight&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
@@ -264,7 +289,7 @@ function handl_apps(){
 
             <div class="card">
                 <a target="_blank" href="https://docs.utmgrabber.com/search?term=FB+CAPI&utm_campaign=HandLFBCAPI&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
-                    <img src="<?php print(plugins_url('img/fbcapi.png',__FILE__));?>"></img>
+                    <img src="<?php echo esc_url( plugins_url( 'img/fbcapi.png', __FILE__ ) ); ?>"></img>
                 </a>
                 <div class="container">
                     <a target="_blank" href="https://docs.utmgrabber.com/search?term=FB+CAPI&utm_campaign=HandLFBCAPI&utm_source=WordPress_FREE&utm_medium=wordpress_apps_page">
@@ -307,11 +332,11 @@ function handl_kb(){
 
         <div class="handl-follow-us">
             <h3>Follow us on social media to get the latest!</h3>
-            <a href="https://www.facebook.com/handlutmgrabber" target="_blank"><?php print block_core_social_link_services('facebook', 'icon'); ?></a>
-            <a href="https://twitter.com/UTMGrabber" target="_blank"><?php print block_core_social_link_services('twitter', 'icon'); ?></a>
-            <a href="https://www.youtube.com/@UTMGrabber" target="_blank"><?php print block_core_social_link_services('youtube', 'icon'); ?></a>
-            <a href="https://www.instagram.com/utmgrabber/" target="_blank"><?php print block_core_social_link_services('instagram', 'icon'); ?></a>
-            <a href="https://www.tiktok.com/@handldigital" target="_blank"><?php print block_core_social_link_services('tiktok', 'icon'); ?></a>
+            <a href="https://www.facebook.com/handlutmgrabber" target="_blank"><?php echo wp_kses_post( block_core_social_link_services( 'facebook', 'icon' ) ); ?></a>
+            <a href="https://twitter.com/UTMGrabber" target="_blank"><?php echo wp_kses_post( block_core_social_link_services( 'twitter', 'icon' ) ); ?></a>
+            <a href="https://www.youtube.com/@UTMGrabber" target="_blank"><?php echo wp_kses_post( block_core_social_link_services( 'youtube', 'icon' ) ); ?></a>
+            <a href="https://www.instagram.com/utmgrabber/" target="_blank"><?php echo wp_kses_post( block_core_social_link_services( 'instagram', 'icon' ) ); ?></a>
+            <a href="https://www.tiktok.com/@handldigital" target="_blank"><?php echo wp_kses_post( block_core_social_link_services( 'tiktok', 'icon' ) ); ?></a>
 
 
         </div>
@@ -330,8 +355,6 @@ function HUG_Append_All($content) {
 
     if (is_object($html)) {
       $as = $html->find('a');
-      $search = array();
-      $replace = array();
       
       foreach ($as as $a) {
         $a_original = $a->href;
@@ -341,26 +364,39 @@ function HUG_Append_All($content) {
         if (preg_match('/javascript:void/',$a_original)) continue;
         if (preg_match('/^#/',$a_original)) continue;
         
-        // Sanitize URL
-        $a_original = esc_url($a_original);
-
-        // Only proceed if URL is valid
+        // Only proceed if URL is valid (check before sanitization)
         if (!filter_var($a_original, FILTER_VALIDATE_URL) && !preg_match('/^\//', $a_original)) {
           continue;
         }
 
-        $search[] = "/['\"]" . preg_quote($a_original, '/') . "['\"]/";
+        // Use WordPress's add_query_arg which properly handles existing parameters
+        // and always uses & as separator. Don't use esc_url() as it can cause encoding issues.
+        $utm_params = HUGGenerateUTMsForURL();
         
-        // Safely append UTM parameters
-        $utm_params = array_map('esc_attr', HUGGenerateUTMsForURL());
-        $modified_url = esc_url(add_query_arg($utm_params, $a_original));
+        // add_query_arg will merge with existing params, overwriting matching keys
+        // and preserve non-matching params. It always uses & as separator.
+        $modified_url = add_query_arg($utm_params, $a_original);
         
-        $replace[] = '"' . $modified_url . '"';
+        // Ensure no semicolons are present (safety check)
+        // Some HTML parsers might introduce semicolons, so normalize them
+        if (strpos($modified_url, '?') !== false) {
+          $url_parts = explode('?', $modified_url, 2);
+          if (isset($url_parts[1])) {
+            // Normalize any semicolons to ampersands in the query string
+            $query_part = str_replace(';', '&', $url_parts[1]);
+            $modified_url = $url_parts[0] . '?' . $query_part;
+          }
+        }
+        
+        // Directly modify the href attribute using DOM manipulation
+        // instead of regex replacement on raw HTML.
+        $a->href = $modified_url;
       }
       
-      if (!empty($search) && !empty($replace)) {
-        $content = preg_replace($search, $replace, $content);
-      }
+      // Return the properly escaped HTML from the DOM library
+      $content = $html->save();
+      $html->clear();
+      unset($html);
     }
   }
   return $content;
@@ -371,12 +407,27 @@ function handl_utm_variables(){
     return array('utm_source','utm_medium','utm_term', 'utm_content', 'utm_campaign', 'gclid');
 }
 
+/**
+ * Returns the list of tracking parameters available in the free version on integrations
+ */
+function handl_lite_tracking_params() {
+    return array(
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_term',
+        'utm_content'
+    );
+}
+
 function HUGGenerateUTMsForURL(){
   $fields = handl_utm_variables();
   $utms = array();
   foreach ($fields as $id=>$field){
-    if (isset($_COOKIE[$field]) && $_COOKIE[$field] != '')
-      $utms[$field] = sanitizeQueryArgs($_COOKIE[$field]);
+    if (isset($_COOKIE[$field]) && $_COOKIE[$field] != '') {
+      // Sanitize for URL query parameters
+      $utms[$field] = esc_attr(sanitizeQueryArgs($_COOKIE[$field]));
+    }
   }
   return $utms;
 }
@@ -484,7 +535,7 @@ if ( ! function_exists( 'handl_admin_notice__success' ) ) {
                             ajaxurl,
                             {
                                 'action': 'handl_notice_dismiss',
-                                'field':   '<?php print $field;?>'
+                                'field':   '<?php echo esc_js( $field ); ?>'
                             }
                         );
 
@@ -557,7 +608,7 @@ function handl_display_dashboard_widget(){
     ?>
     <div class="handl-dash-widget">
         <p>
-        <div class="dashicons dashicons-megaphone" aria-hidden="true"></div> Did you know you could do much more with <b>HandL UTM Grabber & <?php print $forms; ?></b> by capturing important parameters such as utm_, gclid, fbclid and syncing it to your favorite CRM?. Find out <a target="_blank" href="<?php print handl_v3_generate_links(sanitize_title($forms), '', 'dash-widget'); ?>">more here</a>.
+        <div class="dashicons dashicons-megaphone" aria-hidden="true"></div> Did you know you could do much more with <b>HandL UTM Grabber & <?php echo esc_html( $forms ); ?></b> by capturing important parameters such as utm_, gclid, fbclid and syncing it to your favorite CRM?. Find out <a target="_blank" href="<?php echo esc_url( handl_v3_generate_links( sanitize_title( $forms ), '', 'dash-widget' ) ); ?>">more here</a>.
         </p>
     </div>
     <?php endif; ?>
@@ -568,7 +619,7 @@ function handl_display_dashboard_widget(){
     ?>
     <div class="handl-dash-widget">
         <p>
-        <div class="dashicons dashicons-megaphone" aria-hidden="true"></div> Are you sending offline conversions to Facebook or Google Analytics from <b><?php print $carts; ?></b>? Offline conversions increase your marketing revenue 5-15% more! Find out <a target="_blank" href="<?php print handl_v3_generate_links(sanitize_title($carts), '', 'dash-widget'); ?>">more here</a>.
+        <div class="dashicons dashicons-megaphone" aria-hidden="true"></div> Are you sending offline conversions to Facebook or Google Analytics from <b><?php echo esc_html( $carts ); ?></b>? Offline conversions increase your marketing revenue 5-15% more! Find out <a target="_blank" href="<?php echo esc_url( handl_v3_generate_links( sanitize_title( $carts ), '', 'dash-widget' ) ); ?>">more here</a>.
         </p>
     </div>
     <?php endif; ?>

@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 if ( ! class_exists( 'GFForms' ) ) {
 	return '';
@@ -102,12 +103,12 @@ add_action('gform_editor_js_set_default_values', 'handl_gform_editor_js_set_defa
 function handl_gform_editor_js_set_default_values($a){
 	$utm_fields = handl_utm_variables();
 	foreach ($utm_fields as $field) {
-		print "
-        case 'handlfree_$field':
+		echo "
+        case 'handlfree_" . esc_js( $field ) . "':
             field.inputs = null;
-            field.label = 'HandL ( $field )'
+            field.label = 'HandL ( " . esc_js( $field ) . " )'
             field.allowsPrepopulate = true
-            field.inputName = '$field'
+            field.inputName = '" . esc_js( $field ) . "'
         break;
     ";
 	}
@@ -129,13 +130,12 @@ function add_gravity_form_notice_for_v3( $meta_boxes, $entry, $form ) {
 }
 
 function gravity_grabber_v3($entry, $form){
-	$upgrade_link = handl_v3_generate_links('HandL_Premium_Upgrade','','GravityForm');
-	print "<p>You are currently tracking only utm_* variables. You could have tracked more. <a href='$upgrade_link' target='_blank'>Click here</a> to upgrade.</p>";
-	print "<ul>";
-	foreach (PREMIUM_FEATURES as $feature){
-		print "<li><a target='_blank' href='$upgrade_link'><input type='checkbox' disabled/></a>$feature</li>";
+	$upgrade_link = esc_url( handl_v3_generate_links( 'HandL_Premium_Upgrade', '', 'GravityForm' ) );
+	echo "<p>You are currently tracking only utm_* variables. You could have tracked more. <a href='" . esc_url( $upgrade_link ) . "' target='_blank'>Click here</a> to upgrade.</p>";
+	echo "<ul>";
+	foreach ( PREMIUM_FEATURES as $feature ) {
+		echo "<li><a target='_blank' href='" . esc_url( $upgrade_link ) . "'><input type='checkbox' disabled/></a>" . esc_html( $feature ) . "</li>";
 	}
-	print "</ul>";
-
+	echo "</ul>";
 }
 ?>

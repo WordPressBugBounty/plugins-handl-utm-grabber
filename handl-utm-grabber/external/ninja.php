@@ -1,4 +1,5 @@
 <?php
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 class HandLUTM_MergeTags extends NF_Abstracts_MergeTags
 {
