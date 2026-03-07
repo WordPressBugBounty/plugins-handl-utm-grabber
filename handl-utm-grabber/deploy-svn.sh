@@ -87,7 +87,7 @@ echo "5️⃣  Tagging version ${VERSION}…"
 # cheap copy in SVN (records snapshot of trunk/)
 svn cp trunk "tags/${VERSION}"
 # commit that tag with a clear message
-svn ci -m "Completely revamped UI"
+svn ci -m "Release version ${VERSION}"
 
 # -------------------------------------------------------------------
 # DONE

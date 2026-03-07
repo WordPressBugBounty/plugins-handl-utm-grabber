@@ -6,11 +6,12 @@ Plugin Name: HandL UTM Grabber
 Plugin URI: https://utmgrabber.com
 Description: The easiest way to capture UTMs on your (optin) forms.
 Author: Haktan Suren
-Version: 2.8.3
+Version: 2.8.4
 Author URI: https://www.utmgrabber.com/
 */
 
 use Handl\UtmrabberFree\Admin\Handl_React_Pages_Manager;
+use Handl\UtmrabberFree\Admin\Handl_Promos_Manager;
 
 define( 'HANDL_UTM_V3_LINK', 'https://utmgrabber.com' );
 define( 'PREMIUM_FEATURES', ['Organic Traffic (Google, Bing etc.)', 'Google Ads (ValueTrack Params e.g. keyword)' , 'Facebook Ads (fbclid)', 'Traffic Source (Paid, Organic, Referrer, Direct)','First/Last attribution', 'Microsoft Ads (msclkid)', 'Affiliate Marketing']);
@@ -1045,7 +1046,9 @@ add_action('admin_enqueue_scripts', function() {
 });
 if (is_admin()) {
     require_once "includes/admin/react-admin.php";
+    require_once "includes/admin/promos.php";
     new Handl_React_Pages_Manager();
+    new Handl_Promos_Manager();
 }
 require_once "includes/admin/handl-options.php";
 

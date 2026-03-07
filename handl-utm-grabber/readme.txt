@@ -1,188 +1,129 @@
-=== HandL UTM Grabber / Tracker===
+=== HandL UTM Grabber / Tracker ===
 Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
 Tested up to: 6.9
-Stable tag: 2.8.3
+Stable tag: 2.8.4
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-The easiest (we mean it!) way to capture UTMs on your (optin) forms. Supports: Contact Form 7, Gravity Forms, Ninja Forms, Salesforce, ActiveCampaign and many more.
+The WordPress attribution plugin used by over 200,000+ sites to capture UTMs, gclid, and source data in your forms, CRM, and revenue workflows.
 
 == Description ==
-= WordPress UTM Tracker Plugin =
+= UTM Tracking for WordPress (Built for Attribution) =
 
-Capture and track **all the UTM** variables, gclid (and more) as soon as user hits your website (ANY page of your WP installation): One great feature of the plugin is the UTM variables are saved in **client's browser (COOKIES)** and even though there is no UTM variables in URL (query arguments/parameters), the variables can still be accessible via shortcode across any page/widget of your website. Because they are pulled from client-side user cookies.
+UTM Grabber helps marketing teams reduce attribution loss between click and conversion.
 
-> #### Major features in HandL UTM Grabber / Tracker include:
+It captures UTM parameters and click IDs on first visit, stores them in first-party cookies, and makes them available site-wide so your forms, CRM syncs, and checkout flows keep campaign context intact.
+
+Trusted by over **200,000 WordPress sites**, UTM Grabber is built for teams that need reliable source data to scale what works.
+
+> #### What you get in the free plugin
 >
-> * Add hidden fields in your forms (incl. Contact Form 7, Gravity Forms, WordPress-to-lead for Salesforce CRM, Ninja Forms, ActiveCampaign, Caldera Forms, WooCommerce, Formidable and many more.)
-> * Pass UTM variables and all the parameters to major marketing tools such as Salesforce CRM, PipeDrive CRM, HubSpot Email Marketing, HubSpot CRM, Google Sheets, Active Campaign, Zoho CRM, Zoho Mail, Zoho Invoice, Agile CRM, Slack, Trello, Infusionsoft by Keap, Microsoft Excel, Dropbox, HelpScout, Zendesk, Freshbooks, Freshsales, Intercom, Click Funnels, Microsoft Dynamics 365 CRM, Capsule CRM, Insightly CRM, Printfection, Acuity Scheduling, Quickbooks Online, Vero, Aweber, Interspire using our Zapier integration...
-> * Hassle free implementation (no shortcodes). See below...   
+> * Capture the core attribution parameters: `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`, and `gclid`
+> * Store attribution data in first-party cookies
+> * Use shortcodes to inject tracking values into forms and content
+> * Track key context fields like referrer and landing page
+> * Push clean attribution data into major workflows (forms, WooCommerce, CRM automations)
+> * Includes iOS 14+ friendly tracking support
 
-Upgrade to HandL UTM Grabber V3 to unlock all the [**premium features**](https://utmgrabber.com/?utm_source=WordPress_FREE&utm_medium=wordpress_update_link&utm_campaign=HandL_Plugin_Page)
+= Why teams choose UTM Grabber =
 
-* Track all UTM and custom parameters
-* Adjust cookie time as you wish
-* EU GDPR compliant tracking
-* Latest Wordpress & PHP 7.4 Support
-* Server & client side tracking
-* Tracks clientid from Google Analytics
-* Track source from Organic Traffic
-* Pass all tracked data to different domains/iframes
-* Google Analytics (GA) offline conversions
-* Site 2 Site (S2S) Postback
+* **Attribution continuity:** Preserve campaign context beyond the first pageview and across the customer journey.
+* **First-party data model:** Your attribution data stays in your WordPress stack.
+* **Built for real WordPress setups:** Designed for form-heavy, plugin-heavy, and marketing-driven sites.
+* **Fast to deploy:** Activate, map fields, and start collecting usable source data quickly.
 
+= Major integrations and compatibility =
 
-We support most common WordPress form/ecommerce/membership plugins
+UTM Grabber works with the most-used WordPress forms and revenue plugins out of the box:
 
 * Contact Form 7
-* Ninja Form
 * Gravity Forms
-* Caldera Forms
-* Formidable
-* WPForms
+* Ninja Forms
 * Elementor
+* WPForms
+* Formidable Forms
+* Caldera Forms
 * Thrive Leads
-* Divi
-* Ultimate Membership
 * WooCommerce
-* ARForms
-* Cognito Forms
-* Easy Registration Forms
-* Form Maker
-* Form Titan
+* Ultimate Member
+* Fluent Forms
 * Forminator
-* Formstack
-* Heyflow
-* JotForm
-* Logiforms
-* Marketo
-* NexForms
-* Ontraport
-* Optimize Leads
-* Optimize Press
-* Optin Monster
-* Pardot
-* Piotnet
-* Quorum
-* Sleeknote
-* Spiffy
-* Thrive Architect
-* Thrive Leads
 * Typeform
 * Webflow
-* WP Fluent Forms
-* WP Everest
-* Yith WooCommerce Request a Quote 
-* Zoho Forms
+* and many more
 
-We integrate with most of the marketing tools using our Zapier/Integromat integration
+Need CRM or ops workflow delivery? UTM Grabber integrates with automation platforms so you can route attribution to tools like:
 
-* Salesforce CRM
-* PipeDrive CRM
-* HubSpot Email Marketing
-* HubSpot CRM
+* Salesforce
+* HubSpot
+* Pipedrive
+* Zoho
+* ActiveCampaign
 * Google Sheets
-* Active Campaign
-* Zoho CRM
-* Zoho Mail
-* Zoho Invoice
-* Agile CRM
 * Slack
-* Trello
-* Infusionsoft by Keap
-* Microsoft Excel
-* Dropbox
-* HelpScout
-* Zendesk
-* Freshbooks
-* Freshsales
-* Intercom
-* Click Funnels
-* Microsoft Dynamics 365 CRM
-* Capsule CRM
-* Insightly CRM
-* Printfection
-* Acuity Scheduling
-* Quickbooks Online
-* Vero
-* Aweber
-* Interspire
-* SendGrid
-* MailChimp
-* GetResponse
-* ConvertKit
-* Drip
-* MailerLite
+* Mailchimp
 * Klaviyo
-* Mailgen
+* and many others via Zapier/Make
 
-Compatible with many other plugins
+= Upgrade to HandL UTM Grabber V3 =
 
-* AffiliateWP
-* Amelia Booking
-* Bloom
-* Brave
-* Brilliant Web-to-Lead
-* Calendly
-* Easy Appointments
-* Easy Digital Downloads
-* Memberpress
-* SamCart
-* Thrive Cart
-* Ultimate Member
-* WP Job Manager
+Upgrade to unlock the full attribution stack and advanced controls:  
+[**See all premium features**](https://utmgrabber.com/?utm_source=WordPress_FREE&utm_medium=wordpress_update_link&utm_campaign=HandL_Plugin_Page)
 
+* Facebook Conversion API (FB CAPI) workflows for paid social and WooCommerce
+* AI-Powered Insights for anomaly detection and optimization recommendations
+* GCLID Reporter for Google Ads click tracking and offline conversion workflows
+* Track all UTM + advanced click IDs (`fbclid`, `gclid`, `msclkid`, ValueTrack) and custom parameters
+* First-touch and last-touch attribution fields
+* Track source categories (Paid, Organic, Referral, Direct)
+* Customize cookie duration to match your sales cycle
+* Server-side and client-side tracking options
+* Google Analytics client ID tracking
+* Cross-domain/iframe attribution passing
+* Site-to-site (S2S) postback options
+* Expanded integrations for forms, CRMs, and automation workflows
+* GDPR-ready setup with broad consent-tool compatibility
 
-List of GDPR solutions we are compatible with
+= Documentation, support, and community =
 
-* Borlabs Cookie
-* Complianz
-* Cookie Information
-* Cookie Notice
-* Cookiebot
-* CookiePro
-* CookieYes (GDPR Cookie Consent)
-* Ultimate GDPR & CCPA
+* [Documentation](https://docs.utmgrabber.com/?utm_medium=referral&utm_source=wordpress.org&utm_campaign=HandL+UTM+Grabber+Readme&utm_content=Documentation)
+* [Leave a review](https://wordpress.org/support/view/plugin-reviews/handl-utm-grabber#postform)
+* [Join support Slack](https://www.haktansuren.com/slack-handlwp/)
 
-
-
-[Check out the documentation](https://handldigital.com/utm-grabber/documentation/public/?utm_medium=referral&utm_source=wordpress.org&utm_campaign=HandL+UTM+Grabber+Readme&utm_content=Documentation)
-
-Please [review](https://wordpress.org/support/view/plugin-reviews/handl-utm-grabber#postform) if you like the plugin!
-
-Question/Problem/Support join our [slack channel](https://www.haktansuren.com/slack-handlwp/).
-
-**SPECIAL THANKS:** This plugin has been tested on various operating systems and browsers thanks to <a href='https://www.browserstack.com'>BrowserStack!</a> 
+**SPECIAL THANKS:** This plugin has been tested on various operating systems and browsers thanks to <a href='https://www.browserstack.com'>BrowserStack!</a>
 
 == Installation ==
 
-This section describes how to install the plugin and get it working.
-
-1. Upload `handl-utm-grabber` folder to the `/wp-content/plugins/` directory via FTP
-1. Activate the plugin through the 'Plugins' menu in WordPress
+1. Upload `handl-utm-grabber` to the `/wp-content/plugins/` directory (or install from WordPress Plugins).
+2. Activate the plugin through the `Plugins` menu in WordPress.
+3. Add hidden fields/shortcodes to your forms (Contact Form 7, Gravity Forms, Ninja Forms, Elementor, etc.).
+4. Submit a test lead with UTM parameters and confirm values are captured correctly.
 
 == Frequently Asked Questions ==
-= I'm using X Forms. Can I use this plugin to track UTMs? =
-Most likely the answer is yes! This plugin is the only UTM Tracking plugin that supports majority of the form plugins. Here is the list of forms we support out of the box. Please contact us if your form is not listed here. Like said, we probably support your favorite forms too :)
-* Contact Form 7
-* Ninja Form
-* WPForms
-* Elementor
-* Thrive Leads
-* Formidable
 
-= What can I track with HandL UTM Grabber / Tracker? =
-You can track UTMs, ValueTrack, Facebook Ads parameters and EVERYTHING (using the custom parameters)
+= Is this plugin really suitable for serious attribution work? =
+Yes. UTM Grabber is built specifically for attribution accuracy on WordPress and is trusted by over 200,000 sites. If your team runs paid traffic and needs dependable source data in forms and CRM, this is exactly what it is designed for.
 
-= I have WooCommerce, how can I use HandL UTM Grabber / Tracker to track UTMs? =
-HandL UTM Grabber / Tracker supports WooCommerce out of the box. Just activate the plugin and next order via WooCommerce will collect all the UTMs, ValueTrack, Facebook Ads parameters and EVERYTHING (using the custom parameters)
+= What can I track with the free version? =
+The free plugin tracks core UTM parameters (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`) plus `gclid`, along with key context like landing page and referrer.
 
-= How long can I track our leads / users for using HandL UTM Grabber / Tracker? =
-Community version tracks your leads/users for 30 days. However you can define your own value with HandL UTM Grabber / Tracker V3
+= How long does attribution data persist? =
+In the free plugin, tracking cookies persist for 30 days. In V3, you can customize the duration to fit your funnel and sales cycle.
 
+= Can I use this with WooCommerce? =
+Yes. UTM Grabber includes WooCommerce support so order-level records can retain campaign/source context for better revenue attribution.
+
+= Can I send attribution data to my CRM? =
+Yes. You can pass data through supported form integrations and automation tools (including Zapier/Make) into CRMs such as HubSpot, Salesforce, Zoho, and others.
+
+= Does V3 include FB CAPI, AI Insights, and GCLID reporting? =
+Yes. HandL UTM Grabber V3 includes Facebook CAPI workflows, AI-Powered Insights, and the GCLID Reporter, plus expanded attribution controls for paid media and offline conversion reporting.
+
+= Is UTM Grabber GDPR-friendly? =
+Yes. UTM Grabber is built with a first-party data approach and supports GDPR-oriented tracking workflows. Advanced compliance controls are available in V3.
 
 == Screenshots ==
 
@@ -199,6 +140,9 @@ Community version tracks your leads/users for 30 days. However you can define yo
 1. Zapier Integration
 
 == Changelog ==
+= 2.8.4 =
+* Promotional updates & improvements
+
 = 2.8.3 =
 * Security: Improved output escaping and sanitization
 * Security: Added direct file access protection
@@ -272,7 +216,7 @@ Contact Form 7 Bugfix for 6.1
 * Some new seasonal notifications added.
 
 = 2.7.13 =
-* HandL notifications added.
+* UTM Grabber notifications added.
 
 = 2.7.12 =
 * Health check and best practice of collecting UTMs in Ninja Forms

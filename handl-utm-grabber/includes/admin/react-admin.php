@@ -22,9 +22,12 @@ class Handl_React_Pages_Manager
 
     public function add_react_menu_pages()
     {
+        $badge_html = apply_filters( 'handl_promo_menu_badge', '' );
+        $menu_title = 'UTM' . $badge_html;
+
         add_menu_page(
             'HandL UTM Grabber',
-            'UTM',
+            $menu_title,
             'manage_options',
             'handl-utm-grabber.php',
             [ $this, 'render_settings_page' ],
