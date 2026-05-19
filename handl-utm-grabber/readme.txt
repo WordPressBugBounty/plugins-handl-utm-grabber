@@ -3,7 +3,7 @@ Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
 Tested up to: 6.9
-Stable tag: 2.8.4
+Stable tag: 2.9.0
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -17,7 +17,7 @@ UTM Grabber helps marketing teams reduce attribution loss between click and conv
 
 It captures UTM parameters and click IDs on first visit, stores them in first-party cookies, and makes them available site-wide so your forms, CRM syncs, and checkout flows keep campaign context intact.
 
-Trusted by over **200,000 WordPress sites**, UTM Grabber is built for teams that need reliable source data to scale what works.
+Trusted by over **250,000 WordPress sites**, UTM Grabber is built for teams that need reliable source data to scale what works.
 
 > #### What you get in the free plugin
 >
@@ -140,6 +140,9 @@ Yes. UTM Grabber is built with a first-party data approach and supports GDPR-ori
 1. Zapier Integration
 
 == Changelog ==
+= 2.9.0 =
+* One click setup for Gravity / Contact Form 7 / Ninja / Elementor Form
+
 = 2.8.4 =
 * Promotional updates & improvements
 

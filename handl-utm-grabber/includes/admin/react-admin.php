@@ -129,12 +129,11 @@ class Handl_React_Pages_Manager
             ),
             $script_asset['version']
         );
-        wp_localize_script('handl-react-main-script', 'wpAPIProps', [
+        $wp_api_props = apply_filters( 'handl_react_admin_localize', [
             'ajax_url' => admin_url('admin-ajax.php'),
-            // 'nonce'    => array(
-            //     'license_nonce' => wp_create_nonce('license_nonce'),
-            // ),
-        ]);
+            'nonce'    => array(),
+        ] );
+        wp_localize_script('handl-react-main-script', 'wpAPIProps', $wp_api_props);
         // wp_localize_script('handl-react-main-script', 'appProps', [
         //     'license_key' => get_option('license_key_handl-utm-grabber-v3'),
         //     'handl_active' => $GLOBALS['handl_active'] ? "true" : "false",
