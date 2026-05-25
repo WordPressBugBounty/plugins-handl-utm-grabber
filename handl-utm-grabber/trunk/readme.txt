@@ -127,6 +127,11 @@ Yes. UTM Grabber is built with a first-party data approach and supports GDPR-ori
 
 == Screenshots ==
 
+1. Attribution dashboard showing captured UTM, click ID, source, medium, campaign, and landing-page context for marketing teams.
+1. Lead records with attribution fields available for filtering, exporting, and campaign reporting.
+1. Campaign insights that help marketers see what is working and where tracking coverage needs attention.
+1. Attribution field mapping for core UTM values, click IDs, landing pages, referrers, and source categories.
+1. First-party tracking settings for attribution persistence, source classification, and reporting quality checks.
 1. It should look like this after install.
 1. Gravity Form Integration.
 1. Salesforce Integration.

@@ -6,7 +6,7 @@ Plugin Name: HandL UTM Grabber
 Plugin URI: https://utmgrabber.com
 Description: The easiest way to capture UTMs on your (optin) forms.
 Author: Haktan Suren
-Version: 2.9.1
+Version: 2.9.0
 Author URI: https://www.utmgrabber.com/
 */
 
