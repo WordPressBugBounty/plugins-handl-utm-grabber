@@ -1,14 +1,13 @@
 <?php
 if ( ! defined( 'ABSPATH' ) ) exit;
 
-/*
-Plugin Name: HandL UTM Grabber
-Plugin URI: https://utmgrabber.com
-Description: The easiest way to capture UTMs on your (optin) forms.
-Author: Haktan Suren
-Version: 2.9.1
-Author URI: https://www.utmgrabber.com/
-*/
+/**
+ * Plugin Name: HandL UTM Grabber
+ * Description: The easiest way to capture UTMs on your (optin) forms.
+ * Author: Haktan Suren
+ * Version: 2.9.2
+ * Author URI: https://www.utmgrabber.com/
+ */
 
 use Handl\UtmrabberFree\Admin\Handl_React_Pages_Manager;
 use Handl\UtmrabberFree\Admin\Handl_Promos_Manager;

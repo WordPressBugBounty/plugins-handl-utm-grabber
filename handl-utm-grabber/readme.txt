@@ -3,7 +3,7 @@ Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
 Tested up to: 7.0
-Stable tag: 2.9.1
+Stable tag: 2.9.2
 Requires PHP: 5.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -140,6 +140,9 @@ Yes. UTM Grabber is built with a first-party data approach and supports GDPR-ori
 1. Zapier Integration
 
 == Changelog ==
+= 2.9.2 =
+* Reduce size of the plugin
+
 = 2.9.1 =
 * WP 7.0 compatibility
 
