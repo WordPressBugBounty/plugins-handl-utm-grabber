@@ -20,12 +20,14 @@ class HandLUTM_MergeTags extends NF_Abstracts_MergeTags
     $my_merge_tags = array();
     $fields = array('utm_source','utm_medium','utm_term', 'utm_content', 'utm_campaign', 'gclid', 'handl_original_ref', 'handl_landing_page', 'handl_ip', 'handl_ref', 'handl_url');
     foreach ($fields as $field){
-        $cookie_field = isset($_COOKIE[$field]) ? $_COOKIE[$field] : '';
     	$my_merge_tags[$field] = array(
           'id' => $field,
           'tag' => '{handl:'.$field.'}', // The tag to be  used.
           'label' => __( $field, 'handl_utm_grabber' ), // Translatable label for tag selection.
-          'callback' => function() use ($cookie_field) {return urldecode($cookie_field);} // Class method for processing the tag. See below.
+          // Read at tag use.
+          'callback' => function() use ($field) {
+              return isset($_COOKIE[$field]) ? esc_html($_COOKIE[$field]) : '';
+          }
         );
     }
     

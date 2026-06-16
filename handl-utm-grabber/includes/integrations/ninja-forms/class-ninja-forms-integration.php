@@ -87,6 +87,37 @@ class Ninja_Forms_Integration extends Handl_Integration {
 		return $results;
 	}
 
+	protected function detect_integrated_params( $form_id ) {
+		if ( ! $this->is_active() ) {
+			return null;
+		}
+
+		$fields = \Ninja_Forms()->form( (int) $form_id )->get_fields();
+		if ( ! is_array( $fields ) && ! is_object( $fields ) ) {
+			return null;
+		}
+
+		$tracked = array_map( 'strval', $this->get_tracked_params() );
+		$present = array();
+
+		foreach ( $fields as $field ) {
+			$key     = (string) $field->get_setting( 'key' );
+			$default = (string) $field->get_setting( 'default' );
+
+			foreach ( $tracked as $param ) {
+				if ( in_array( $param, $present, true ) ) {
+					continue;
+				}
+				// Primary: key === param. Legacy: default is `{handl:param}`.
+				if ( $key === $param || $default === '{handl:' . $param . '}' ) {
+					$present[] = $param;
+				}
+			}
+		}
+
+		return array_values( array_unique( $present ) );
+	}
+
 	/**
 	 * Insert one hidden field per requested param, skipping any that already
 	 * exist on the form

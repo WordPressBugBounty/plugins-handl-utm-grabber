@@ -28,6 +28,45 @@ abstract class Handl_Integration {
 		return handl_lite_tracking_params();
 	}
 
+	/**
+	 * Per-form status. @param string|int $form_id
+	 * @return array{form_id:string,status:string,integrated:string[],missing:string[]} status: complete|partial|none|not_found.
+	 */
+	public function get_form_status( $form_id ) {
+		$present = $this->detect_integrated_params( $form_id );
+
+		if ( $present === null ) {
+			return array(
+				'form_id'    => (string) $form_id,
+				'status'     => 'not_found',
+				'integrated' => array(),
+				'missing'    => array(),
+			);
+		}
+
+		$tracked    = array_map( 'strval', $this->get_tracked_params() );
+		$integrated = array_values( array_intersect( $tracked, $present ) );
+		$missing    = array_values( array_diff( $tracked, $integrated ) );
+
+		if ( empty( $integrated ) ) {
+			$status = 'none';
+		} elseif ( empty( $missing ) ) {
+			$status = 'complete';
+		} else {
+			$status = 'partial';
+		}
+
+		return array(
+			'form_id'    => (string) $form_id,
+			'status'     => $status,
+			'integrated' => $integrated,
+			'missing'    => $missing,
+		);
+	}
+
+	/** Tracked params present on the form (current + legacy formats). @return string[]|null null if form not loadable. */
+	abstract protected function detect_integrated_params( $form_id );
+
 	public function to_array() {
 		return array(
 			'slug'           => $this->get_slug(),

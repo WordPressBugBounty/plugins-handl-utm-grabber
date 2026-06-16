@@ -199,6 +199,65 @@ class Elementor_Integration extends Handl_Integration {
 		return $results;
 	}
 
+	protected function detect_integrated_params( $form_id ) {
+		if ( ! $this->is_active() ) {
+			return null;
+		}
+
+		$parts = explode( ':', (string) $form_id, 2 );
+		if ( count( $parts ) !== 2 ) {
+			return null;
+		}
+		$post_id   = (int) $parts[0];
+		$widget_id = (string) $parts[1];
+		if ( $post_id <= 0 || $widget_id === '' ) {
+			return null;
+		}
+
+		$raw  = get_post_meta( $post_id, '_elementor_data', true );
+		$tree = is_string( $raw ) ? json_decode( $raw, true ) : null;
+		if ( ! is_array( $tree ) ) {
+			return null;
+		}
+
+		$widget = &$this->find_form_widget( $tree, $widget_id );
+		if ( $widget === null ) {
+			unset( $widget );
+			return null;
+		}
+
+		$fields = ( isset( $widget['settings']['form_fields'] ) && is_array( $widget['settings']['form_fields'] ) )
+			? $widget['settings']['form_fields']
+			: array();
+		unset( $widget );
+
+		$tracked = array_map( 'strval', $this->get_tracked_params() );
+		$present = array();
+
+		foreach ( $fields as $field ) {
+			$type  = isset( $field['field_type'] ) ? (string) $field['field_type'] : '';
+			$cid   = isset( $field['custom_id'] ) ? (string) $field['custom_id'] : '';
+			$label = isset( $field['field_label'] ) ? (string) $field['field_label'] : '';
+
+			foreach ( $tracked as $param ) {
+				if ( in_array( $param, $present, true ) ) {
+					continue;
+				}
+				// Primary: hidden field with custom_id === param.
+				if ( $type === 'hidden' && $cid === $param ) {
+					$present[] = $param;
+					continue;
+				}
+				// Legacy: HandL-labelled field referencing the param.
+				if ( strpos( $label, 'HandL' ) !== false && strpos( $label, $param ) !== false ) {
+					$present[] = $param;
+				}
+			}
+		}
+
+		return array_values( array_unique( $present ) );
+	}
+
 	/**
 	 * Recursively walk an Elementor tree, collecting every node with
 	 * `widgetType === 'form'`.
@@ -326,9 +385,9 @@ class Elementor_Integration extends Handl_Integration {
 			array_filter(
 				$widget['settings']['form_fields'],
 				function ( $field ) use ( $tracked ) {
-					$type = (string) ( $field['field_type'] ?? '' );
-					$cid  = (string) ( $field['custom_id'] ?? '' );
-					$dyn  = (string) ( $field['__dynamic__']['field_value'] ?? '' );
+					$type = isset( $field['field_type'] ) ? (string) $field['field_type'] : '';
+					$cid  = isset( $field['custom_id'] ) ? (string) $field['custom_id'] : '';
+					$dyn  = isset( $field['__dynamic__']['field_value'] ) ? (string) $field['__dynamic__']['field_value'] : '';
 
 					// (a) Our custom_id-flow fields.
 					if ( $type === 'hidden' && in_array( $cid, $tracked, true ) ) {

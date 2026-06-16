@@ -5,14 +5,18 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.2
+ * Version: 2.9.3
  * Author URI: https://www.utmgrabber.com/
- */
+*/
 
 use Handl\UtmrabberFree\Admin\Handl_React_Pages_Manager;
 use Handl\UtmrabberFree\Admin\Handl_Promos_Manager;
+use Handl\UtmrabberFree\Integrations\Handl_Integrations_Manager;
+use Handl\UtmrabberFree\Onboarding\Handl_Onboarding_Manager;
 
 define( 'HANDL_UTM_V3_LINK', 'https://utmgrabber.com' );
+$handl_free_header = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
+define( 'HANDL_UTM_GRABBER_FREE_VERSION', isset( $handl_free_header['Version'] ) ? $handl_free_header['Version'] : '' );
 define( 'PREMIUM_FEATURES', ['Organic Traffic (Google, Bing etc.)', 'Google Ads (ValueTrack Params e.g. keyword)' , 'Facebook Ads (fbclid)', 'Traffic Source (Paid, Organic, Referrer, Direct)','First/Last attribution', 'Microsoft Ads (msclkid)', 'Affiliate Marketing']);
 
 require_once "external/zapier.php";
@@ -416,7 +420,11 @@ function handl_lite_tracking_params() {
         'utm_medium',
         'utm_campaign',
         'utm_term',
-        'utm_content'
+        'utm_content',
+        'handl_landing_page',
+        'handl_original_ref',
+        'handl_ip',
+        'gclid',
     );
 }
 
@@ -669,290 +677,6 @@ function handl_utm_grabber_action_links( $links ) {
 add_filter( 'plugin_action_links_' . plugin_basename(__FILE__), 'handl_utm_grabber_action_links' );
 
 
-function get_test_handl_version(){
-    return array(
-        'label' => 'Upgrade your plugin to the premium version.',
-        'status'      => 'recommended',
-        'badge'       => array(
-            'color' => 'blue',
-            'label' => 'UTM'
-        ),
-        'description' => 'To get the full benefit from your tracking experience. We highly recommend updating the plugin to the latest and premium version.',
-        'actions'     => '<a href="'.handl_v3_generate_links('handl_version','','health_check').'" target="_blank"><b>Click here</b> <span aria-hidden="true" class="dashicons dashicons-external"></span></a> to learn more',
-        'test'        => 'handl_version',
-    );
-}
-function get_test_handl_free_audit(){
-	return array(
-		'label' => 'Scan your site to make sure your campaign tracking works as expected',
-		'status'      => 'recommended',
-		'badge'       => array(
-			'color' => 'blue',
-			'label' => 'UTM'
-		),
-		'description' => 'Your site might get benefit from our marketing review',
-		'actions'     => '<a href="https://handldigital.com/free-utm-audit/?utm_campaign=UTMAudit&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"><b>Take completely FREE audit </b> <span aria-hidden="true" class="dashicons dashicons-external"></span></a> to improve your tracking and boost up your revenue.',
-		'test'        => 'handl_free_audit',
-	);
-}
-function handl_utm_site_status_filters($tests){
-
-    $tests['direct']['handl_version'] = array(
-            'test' => 'get_test_handl_version',
-    );
-	$tests['direct']['handl_free_audit'] = array(
-		'test' => 'get_test_handl_free_audit'
-	);
-	$tests['direct']['handl_caching_enabled'] = array(
-		'test' => 'get_test_handl_caching_enabled'
-	);
-	if (is_plugin_active('contact-form-7/wp-contact-form-7.php')) {
-	    $tests['direct']['handl_cf7_shortcodes_used'] = array(
-		    'test' => 'get_test_handl_cf7_shortcodes_used'
-	    );
-    }
-	if (is_plugin_active('gravityforms/gravityforms.php')) {
-		$tests['direct']['handl_gf_shortcodes_used'] = array(
-			'test' => 'get_test_handl_gf_shortcodes_used'
-		);
-	}
-	if (is_plugin_active('ninja-forms/ninja-forms.php')) {
-		$tests['direct']['handl_nf_shortcodes_used'] = array(
-			'test' => 'get_test_handl_nf_shortcodes_used'
-		);
-	}
-    return $tests;
-}
-add_filter( 'site_status_tests', 'handl_utm_site_status_filters' );
-
-function get_test_handl_caching_enabled() {
-    $cache_exist = false;
-
-	$recommendation='';
-	if ( function_exists( 'is_wpe' ) || function_exists( 'is_wpe_snapshot' ) ){
-		$cache_exist = true;
-		$recommendation .= "<li>- You are using WP Engine as your server provider: WP Engine uses server caching and it is known that it stripes query arguments and cookies.</li>";
-    }
-
-	if ( is_plugin_active('wp-rocket/wp-rocket.php') ){
-		$cache_exist = true;
-		$recommendation .= "<li>- You are using WP Rocket. WP Rocket does caching and it is known that it stripes query arguments and cookies.</li>";
-	}
-
-	if (isset($_ENV['PANTHEON_ENVIRONMENT'])) {
-		$recommendation .= "<li>- You are using Pantheon as your server provider: Pantheon uses server caching and it is known that it stripes query arguments and cookies.</li>";
-	}
-
-	$positive = "<p>We could not find and caching plugin installed. Hence you should be good collecting UTMs no problem.</p>";
-	$negative = "<p>You might be occasionally missing UTMs or COOKIE parameters due to caching. Here is the list of things we could find that may adversely impacting the data collection.</p>
-	    <ul>$recommendation</ul>
-	";
-
-	$positive_action = 'If you are having trouble collecting UTMs, or if you think you are missing some UTMs, <a href="https://wordpress.org/support/plugin/handl-utm-grabber/" target="_blank">  create a support ticket here <span aria-hidden="true" class="dashicons dashicons-external"></span></a>, we\'d be happy to take a look at it for you';
-	$negative_action = $positive_action;
-
-	return array(
-		'label' => 'You might be missing some UTMs due to server caching',
-		'status'      => $cache_exist ? 'recommended' : 'good',
-		'badge'       => array(
-			'color' => $cache_exist ? 'red' : 'blue',
-			'label' => 'UTM'
-		),
-		'description' => $cache_exist ? $negative : $positive,
-		'actions'     => $cache_exist ? $negative_action : $positive_action,
-		'test'        => 'handl_caching_enabled',
-	);
-}
-
-function get_test_handl_cf7_shortcodes_used() {
-	$posts = WPCF7_ContactForm::find( array(
-		'post_status'    => 'any',
-		'posts_per_page' => - 1,
-	) );
-
-	$utm_variables = handl_utm_variables();
-	$cf7_forms = array();
-	$cf7_forms_id2_name = array();
-	$cf7_forms_feedback = array();
-	foreach ( $posts as $post ) {
-	    $formID = $post->id();
-		$cf7_forms_id2_name[$formID] = $post->title();
-		$cf7_forms[$formID] = true;
-		/** @var WPCF7_ContactForm $post */
-		$props = $post->get_properties();
-
-		foreach ($utm_variables as $variable){
-		    if ( !preg_match("/".preg_quote("[$variable",'/')."/", $props['form'] ) ){
-			    $cf7_forms[$formID] = false;
-			    $cf7_forms_feedback[$formID][] = $variable;
-			    //break;
-            }
-        }
-	}
-
-	$all_forms_good = array_filter($cf7_forms, function ($element) {
-        return ($element !== true);
-    });
-
-	$recommendation = '';
-	if (sizeof($cf7_forms_feedback) > 0){
-	    foreach ($cf7_forms_feedback as $id=>$fb){
-	        $recommendation .= "<p><b>$cf7_forms_id2_name[$id]</b>: ".implode(",",$fb)."</p>";
-        }
-    }
-
-	$positive = "<p>All of your Contact Form 7 set up properly. You are good to go!</p>";
-	$negative = "<p>Your Contact Form 7 forms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>
-	    $recommendation
-	";
-
-	$positive_action = 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_cf7&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>';
-	$negative_action = '<a href="https://docs.utmgrabber.com/books/contact-form-7-integration/page/contact-form-7-utm-tracking?utm_campaign=utm_proper_cf7&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to learn the best practice of collecting UTM parameters in Contact Form 7 <span aria-hidden="true" class="dashicons dashicons-external"></span></a>';
-
-	return array(
-		'label' => 'Are your capturing/tracking UTMs properly in your Contact Form 7?',
-		'status'      => sizeof($all_forms_good) > 0 ? 'recommended' : 'good',
-		'badge'       => array(
-			'color' => sizeof($all_forms_good) > 0 ? 'red' : 'blue',
-			'label' => 'UTM'
-		),
-		'description' => sizeof($all_forms_good) > 0 ? $negative : $positive,
-		'actions'     => sizeof($all_forms_good) > 0 ? $negative_action : $positive_action,
-		'test'        => 'handl_cf7_shortcodes_used',
-	);
-}
-
-function get_test_handl_gf_shortcodes_used() {
-	$posts = GFAPI::get_forms();
-
-	$utm_variables = handl_utm_variables();
-	$gf_forms = array();
-	$gf_forms_id2_name = array();
-	$gf_forms_feedback = array();
-	foreach ( $posts as $post ) {
-		$formID = $post['id'];
-		$gf_forms_id2_name[$formID] = $post['title'];
-		$gf_forms[$formID] = true;
-
-		$fields = $post['fields'];
-
-		foreach ($utm_variables as $variable){
-		    $check = false;
-		    foreach ($fields as $field){
-		        if ($field['inputName'] != ''){
-			        if ( $variable == $field['inputName'] ){
-				        $check = true;
-			        }
-                }
-            }
-			if (!$check){
-				$gf_forms[$formID] = false;
-				$gf_forms_feedback[$formID][] = $variable;
-            }
-		}
-	}
-
-	$all_forms_good = array_filter($gf_forms, function ($element) {
-		return ($element !== true);
-	});
-
-	$recommendation = '';
-	if (sizeof($gf_forms_feedback) > 0){
-		foreach ($gf_forms_feedback as $id=>$fb){
-			$recommendation .= "<p><b>$gf_forms_id2_name[$id]</b>: ".implode(",",$fb)."</p>";
-		}
-	}
-
-	$positive = "<p>All of your Gravity forms set up properly. You are good to go!</p>";
-	$negative = "<p>Your Gravity forms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>
-	    $recommendation
-	";
-
-	$positive_action = 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_gf&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>';
-	$negative_action = '<a href="https://docs.utmgrabber.com/books/gravity-forms-integration/page/gravity-forms-integration?utm_campaign=utm_proper_gf&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to learn the best practice of collecting UTM parameters in Gravity Forms <span aria-hidden="true" class="dashicons dashicons-external"></span></a>';
-
-	return array(
-		'label' => 'Are your capturing/tracking UTMs properly in your Gravity Form?',
-		'status'      => sizeof($all_forms_good) > 0 ? 'recommended' : 'good',
-		'badge'       => array(
-			'color' => sizeof($all_forms_good) > 0 ? 'red' : 'blue',
-			'label' => 'UTM'
-		),
-		'description' => sizeof($all_forms_good) > 0 ? $negative : $positive,
-		'actions'     => sizeof($all_forms_good) > 0 ? $negative_action : $positive_action,
-		'test'        => 'handl_gf_shortcodes_used',
-	);
-}
-
-function get_test_handl_nf_shortcodes_used() {
-    $posts = Ninja_Forms()->form()->get_forms();
-    /** @var NF_Database_Models_Form $post */
-    $utm_variables = handl_utm_variables();
-    $nf_forms = array();
-    $nf_forms_id2_name = array();
-    $nf_forms_feedback = array();
-    foreach ( $posts as $post ) {
-        $form = $post->get_settings();
-        $formID = $post->get_id();
-        $nf_forms_id2_name[$formID] = $form['title'];
-        $nf_forms[$formID] = true;
-
-        $fields = $form['formContentData'];
-
-        foreach ($utm_variables as $variable){
-            $check = false;
-            foreach ($fields as $field){
-                // Add type check to ensure $field is a string
-                if (is_string($field) && $field != ''){
-                    if ( preg_match("/".preg_quote($variable,'/')."/", $field) ){
-                        $check = true;
-                    }
-                } elseif (is_array($field) && isset($field['value']) && is_string($field['value'])) {
-                    // If field is an array, check the 'value' property if it exists
-                    if ( preg_match("/".preg_quote($variable,'/')."/", $field['value']) ){
-                        $check = true;
-                    }
-                }
-            }
-            if (!$check){
-                $nf_forms[$formID] = false;
-                $nf_forms_feedback[$formID][] = $variable;
-            }
-        }
-    }
-
-    $all_forms_good = array_filter($nf_forms, function ($element) {
-        return ($element !== true);
-    });
-
-    $recommendation = '';
-    if (sizeof($nf_forms_feedback) > 0){
-        foreach ($nf_forms_feedback as $id=>$fb){
-            $recommendation .= "<p><b>$nf_forms_id2_name[$id]</b>: ".implode(",",$fb)."</p>";
-        }
-    }
-
-    $positive = "<p>All of your Ninja Forms set up properly. You are good to go!</p>";
-    $negative = "<p>Your Ninja forms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>
-        $recommendation
-    ";
-
-    $positive_action = 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_nf&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>';
-    $negative_action = '<a href="https://docs.utmgrabber.com/books/ninja-forms-integration/page/ninja-forms-integration?utm_campaign=utm_proper_nf&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to learn the best practice of collecting UTM parameters in Ninja Forms <span aria-hidden="true" class="dashicons dashicons-external"></span></a>';
-
-    return array(
-        'label' => 'Are your capturing/tracking UTMs properly in your Ninja Form?',
-        'status'      => sizeof($all_forms_good) > 0 ? 'recommended' : 'good',
-        'badge'       => array(
-            'color' => sizeof($all_forms_good) > 0 ? 'red' : 'blue',
-            'label' => 'UTM'
-        ),
-        'description' => sizeof($all_forms_good) > 0 ? $negative : $positive,
-        'actions'     => sizeof($all_forms_good) > 0 ? $negative_action : $positive_action,
-        'test'        => 'handl_nf_shortcodes_used',
-    );
-}
-
 function handl_v3_generate_links($utm_campaign = '', $utm_source = 'WordPress_FREE', $utm_medium = ''){
     $utm_source = $utm_source != '' ? $utm_source : 'WordPress_FREE';
     return add_query_arg(array(
@@ -1051,10 +775,48 @@ if (is_admin()) {
 }
 require_once "includes/admin/handl-options.php";
 
+require_once "includes/onboarding/class-onboarding-manager.php";
+
+$handl_integrations_manager = null;
 if ( is_admin() ) {
     require_once "includes/integrations/class-integrations-manager.php";
-    new Handl\UtmrabberFree\Integrations\Handl_Integrations_Manager();
+    $handl_integrations_manager = new Handl_Integrations_Manager();
+
+    require_once "includes/onboarding/class-setup-notice.php";
+    ( new \Handl\UtmrabberFree\Onboarding\Handl_Setup_Notice( $handl_integrations_manager ) )->register();
 }
+
+require_once "includes/health/class-site-health-manager.php";
+( new \Handl\UtmrabberFree\Health\Handl_Site_Health_Manager() )->register();
+
+$handl_onboarding_manager = new Handl_Onboarding_Manager( $handl_integrations_manager );
+$handl_onboarding_manager->register_test_listeners();
+
+if ( is_admin() ) {
+    $handl_onboarding_manager->register_admin_hooks();
+}
+
+function handl_utm_grabber_activate() {
+    if ( ! get_option( 'handl_onboarding_completed', false ) ) {
+        update_option( 'handl_onboarding_redirect', true );
+    }
+}
+register_activation_hook( __FILE__, 'handl_utm_grabber_activate' );
+
+function handl_utm_grabber_maybe_redirect() {
+    if ( ! get_option( 'handl_onboarding_redirect', false ) ) {
+        return;
+    }
+    delete_option( 'handl_onboarding_redirect' );
+
+    if ( isset( $_GET['activate-multi'] ) || wp_doing_ajax() || ! current_user_can( 'manage_options' ) ) {
+        return;
+    }
+
+    wp_safe_redirect( admin_url( 'admin.php?page=handl-onboarding' ) );
+    exit;
+}
+add_action( 'admin_init', 'handl_utm_grabber_maybe_redirect' );
 
 
 

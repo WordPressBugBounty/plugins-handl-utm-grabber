@@ -5,13 +5,13 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 class Handl_Promos_Manager
 {
-    private const PROMOS_ENDPOINT = 'https://api.utmgrabber.com/http/plugin-promos';
-    private const TRANSIENT_KEY = 'handl_plugin_promos';
-    private const INSTALL_DATE_OPTION = 'handl_utm_grabber_install_date';
-    private const DISMISSALS_USER_META_KEY = 'handl_promo_dismissals';
-    private const CACHE_DURATION = 6 * HOUR_IN_SECONDS;
+    const PROMOS_ENDPOINT = 'https://api.utmgrabber.com/http/plugin-promos';
+    const TRANSIENT_KEY = 'handl_plugin_promos';
+    const INSTALL_DATE_OPTION = 'handl_utm_grabber_install_date';
+    const DISMISSALS_USER_META_KEY = 'handl_promo_dismissals';
+    const CACHE_DURATION = 6 * HOUR_IN_SECONDS;
 
-    private const VALID_LOCATIONS = [
+    const VALID_LOCATIONS = [
         'plugin_banner',
         'admin_notice', 
         'dashboard_widget',
@@ -34,14 +34,14 @@ class Handl_Promos_Manager
         add_filter( 'handl_promo_menu_badge', [ $this, 'get_sidebar_badge_html' ] );
     }
 
-    public function maybe_set_install_date(): void
+    public function maybe_set_install_date()
     {
         if ( ! get_option( self::INSTALL_DATE_OPTION ) ) {
             update_option( self::INSTALL_DATE_OPTION, current_time( 'mysql' ) );
         }
     }
 
-    public function get_install_date(): string
+    public function get_install_date()
     {
         $install_date = get_option( self::INSTALL_DATE_OPTION );
         if ( ! $install_date ) {
@@ -51,7 +51,7 @@ class Handl_Promos_Manager
         return $install_date;
     }
 
-    public function get_days_since_install(): int
+    public function get_days_since_install()
     {
         $install_date = $this->get_install_date();
         $install_timestamp = strtotime( $install_date );
@@ -63,7 +63,7 @@ class Handl_Promos_Manager
     // Dismissal Management
     // =========================================================================
 
-    public function get_user_dismissals(): array
+    public function get_user_dismissals()
     {
         $user_id = get_current_user_id();
         if ( ! $user_id ) {
@@ -73,7 +73,7 @@ class Handl_Promos_Manager
         return is_array( $dismissals ) ? $dismissals : [];
     }
 
-    public function dismiss_promo( string $campaign_key ): bool
+    public function dismiss_promo( $campaign_key )
     {
         $user_id = get_current_user_id();
         if ( ! $user_id ) {
@@ -84,7 +84,7 @@ class Handl_Promos_Manager
         return update_user_meta( $user_id, self::DISMISSALS_USER_META_KEY, $dismissals );
     }
 
-    public function is_promo_dismissed( string $campaign_key, ?array $promo = null ): bool
+    public function is_promo_dismissed( $campaign_key, $promo = null )
     {
         $dismissals = $this->get_user_dismissals();
         if ( ! isset( $dismissals[ $campaign_key ] ) ) {
@@ -104,7 +104,7 @@ class Handl_Promos_Manager
         return true;
     }
 
-    public function clear_user_dismissals(): bool
+    public function clear_user_dismissals()
     {
         $user_id = get_current_user_id();
         if ( ! $user_id ) {
@@ -117,7 +117,7 @@ class Handl_Promos_Manager
     // AJAX Endpoints
     // =========================================================================
 
-    public function ajax_get_promos(): void
+    public function ajax_get_promos()
     {
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => 'Unauthorized' ], 403 );
@@ -132,7 +132,7 @@ class Handl_Promos_Manager
         ] );
     }
 
-    public function ajax_dismiss_promo(): void
+    public function ajax_dismiss_promo()
     {
         if ( ! current_user_can( 'manage_options' ) ) {
             wp_send_json_error( [ 'message' => 'Unauthorized' ], 403 );
@@ -157,7 +157,7 @@ class Handl_Promos_Manager
     // Promo Fetching & Filtering
     // =========================================================================
 
-    private function get_promos(): array
+    private function get_promos()
     {
         $cached = get_transient( self::TRANSIENT_KEY );
         if ( $cached !== false ) {
@@ -169,7 +169,7 @@ class Handl_Promos_Manager
         return $promos;
     }
 
-    private function fetch_remote_promos(): array
+    private function fetch_remote_promos()
     {
         $response = wp_remote_get( self::PROMOS_ENDPOINT, [
             'timeout' => 10,
@@ -191,7 +191,7 @@ class Handl_Promos_Manager
         return is_array( $data ) ? $data : [];
     }
 
-    private function filter_promos( array $promos, int $install_days, ?string $location = null ): array
+    private function filter_promos( array $promos, $install_days, $location = null )
     {
         $now = current_time( 'timestamp' );
         
@@ -229,7 +229,7 @@ class Handl_Promos_Manager
             }
 
             if ( $location !== null ) {
-                $locations = $promo['display_locations'] ?? [];
+                $locations = isset( $promo['display_locations'] ) ? $promo['display_locations'] : [];
                 if ( ! in_array( $location, $locations, true ) ) {
                     return false;
                 }
@@ -241,7 +241,7 @@ class Handl_Promos_Manager
         return array_values( $filtered );
     }
 
-    public function get_active_promo_for_location( string $location ): ?array
+    public function get_active_promo_for_location( $location )
     {
         if ( ! in_array( $location, self::VALID_LOCATIONS, true ) ) {
             return null;
@@ -256,15 +256,15 @@ class Handl_Promos_Manager
         }
 
         usort( $filtered, function( $a, $b ) {
-            $date_a = strtotime( $a['date_end'] ?? '9999-12-31' );
-            $date_b = strtotime( $b['date_end'] ?? '9999-12-31' );
+            $date_a = strtotime( isset( $a['date_end'] ) ? $a['date_end'] : '9999-12-31' );
+            $date_b = strtotime( isset( $b['date_end'] ) ? $b['date_end'] : '9999-12-31' );
             return $date_a - $date_b;
         } );
 
         return $filtered[0];
     }
 
-    public function has_active_promo_for_location( string $location ): bool
+    public function has_active_promo_for_location( $location )
     {
         return $this->get_active_promo_for_location( $location ) !== null;
     }
@@ -273,7 +273,7 @@ class Handl_Promos_Manager
     // URL Generation
     // =========================================================================
 
-    public function get_promo_settings_url( string $campaign_key ): string
+    public function get_promo_settings_url( $campaign_key )
     {
         return admin_url( 'admin.php?page=handl-utm-grabber.php#/handl-options?promo=' . urlencode( $campaign_key ) );
     }
@@ -282,7 +282,7 @@ class Handl_Promos_Manager
     // Admin Notice
     // =========================================================================
 
-    public function render_admin_notice(): void
+    public function render_admin_notice()
     {
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
@@ -309,7 +309,7 @@ class Handl_Promos_Manager
     // Dashboard Widget
     // =========================================================================
 
-    public function register_dashboard_widget(): void
+    public function register_dashboard_widget()
     {
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
@@ -327,7 +327,7 @@ class Handl_Promos_Manager
         );
     }
 
-    public function render_dashboard_widget_content(): void
+    public function render_dashboard_widget_content()
     {
         $promo = $this->get_active_promo_for_location( 'dashboard_widget' );
         if ( ! $promo ) {
@@ -350,7 +350,7 @@ class Handl_Promos_Manager
     // Admin Bar
     // =========================================================================
 
-    public function render_admin_bar_item( \WP_Admin_Bar $admin_bar ): void
+    public function render_admin_bar_item( \WP_Admin_Bar $admin_bar )
     {
         if ( ! current_user_can( 'manage_options' ) ) {
             return;
@@ -384,7 +384,7 @@ class Handl_Promos_Manager
     // Sidebar Badge
     // =========================================================================
 
-    public function get_sidebar_badge_html(): string
+    public function get_sidebar_badge_html()
     {
         $promo = $this->get_active_promo_for_location( 'sidebar_badge' );
         if ( ! $promo ) {
@@ -398,7 +398,7 @@ class Handl_Promos_Manager
     // Admin Styles & Scripts
     // =========================================================================
 
-    public function render_admin_styles(): void
+    public function render_admin_styles()
     {
         ?>
         <style>
@@ -454,7 +454,7 @@ class Handl_Promos_Manager
         <?php
     }
 
-    public function render_dismiss_script(): void
+    public function render_dismiss_script()
     {
         ?>
         <script>
@@ -507,7 +507,7 @@ class Handl_Promos_Manager
         <?php
     }
 
-    public static function clear_cache(): bool
+    public static function clear_cache()
     {
         return delete_transient( self::TRANSIENT_KEY );
     }

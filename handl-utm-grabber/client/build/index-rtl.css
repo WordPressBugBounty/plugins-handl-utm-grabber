@@ -496,6 +496,12 @@ video:where(#handl-react-root,#handl-react-root *) {
 [hidden]:where(:not([hidden="until-found"])):where(#handl-react-root,#handl-react-root *) {
   display: none;
 }
+  #handl-react-root {
+    --font-outfit: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-fraunces: 'Fraunces', Georgia, serif;
+    --font-jetbrains-mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
@@ -637,8 +643,14 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .left-1\/2 {
   right: 50%;
 }
+#handl-react-root .left-3\.5 {
+  right: 0.875rem;
+}
 #handl-react-root .left-\[50\%\] {
   right: 50%;
+}
+#handl-react-root .right-0 {
+  left: 0px;
 }
 #handl-react-root .right-1 {
   left: 0.25rem;
@@ -654,6 +666,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .top-0 {
   top: 0px;
+}
+#handl-react-root .top-0\.5 {
+  top: 0.125rem;
 }
 #handl-react-root .top-1\/2 {
   top: 50%;
@@ -672,6 +687,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .col-span-2 {
   grid-column: span 2 / span 2;
+}
+#handl-react-root .m-0 {
+  margin: 0px;
 }
 #handl-react-root .-mx-1 {
   margin-right: -0.25rem;
@@ -706,11 +724,20 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .mb-1 {
   margin-bottom: 0.25rem;
 }
+#handl-react-root .mb-1\.5 {
+  margin-bottom: 0.375rem;
+}
 #handl-react-root .mb-2 {
   margin-bottom: 0.5rem;
 }
+#handl-react-root .mb-2\.5 {
+  margin-bottom: 0.625rem;
+}
 #handl-react-root .mb-3 {
   margin-bottom: 0.75rem;
+}
+#handl-react-root .mb-3\.5 {
+  margin-bottom: 0.875rem;
 }
 #handl-react-root .mb-4 {
   margin-bottom: 1rem;
@@ -721,14 +748,26 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .mb-6 {
   margin-bottom: 1.5rem;
 }
+#handl-react-root .mb-7 {
+  margin-bottom: 1.75rem;
+}
 #handl-react-root .mb-8 {
   margin-bottom: 2rem;
+}
+#handl-react-root .mb-9 {
+  margin-bottom: 2.25rem;
+}
+#handl-react-root .ml-1 {
+  margin-right: 0.25rem;
 }
 #handl-react-root .ml-4 {
   margin-right: 1rem;
 }
 #handl-react-root .ml-auto {
   margin-right: auto;
+}
+#handl-react-root .mr-1 {
+  margin-left: 0.25rem;
 }
 #handl-react-root .mr-2 {
   margin-left: 0.5rem;
@@ -757,6 +796,12 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .mt-6 {
   margin-top: 1.5rem;
 }
+#handl-react-root .mt-7 {
+  margin-top: 1.75rem;
+}
+#handl-react-root .mt-8 {
+  margin-top: 2rem;
+}
 #handl-react-root .block {
   display: block;
 }
@@ -775,6 +820,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .grid {
   display: grid;
 }
+#handl-react-root .contents {
+  display: contents;
+}
 #handl-react-root .hidden {
   display: none;
 }
@@ -784,11 +832,20 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .aspect-video {
   aspect-ratio: 16 / 9;
 }
+#handl-react-root .h-1\.5 {
+  height: 0.375rem;
+}
 #handl-react-root .h-10 {
   height: 2.5rem;
 }
+#handl-react-root .h-11 {
+  height: 2.75rem;
+}
 #handl-react-root .h-12 {
   height: 3rem;
+}
+#handl-react-root .h-14 {
+  height: 3.5rem;
 }
 #handl-react-root .h-16 {
   height: 4rem;
@@ -832,11 +889,41 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .h-9 {
   height: 2.25rem;
 }
+#handl-react-root .h-\[18px\] {
+  height: 18px;
+}
 #handl-react-root .h-\[1px\] {
   height: 1px;
 }
+#handl-react-root .h-\[22px\] {
+  height: 22px;
+}
+#handl-react-root .h-\[2px\] {
+  height: 2px;
+}
+#handl-react-root .h-\[30px\] {
+  height: 30px;
+}
+#handl-react-root .h-\[42px\] {
+  height: 42px;
+}
+#handl-react-root .h-\[480px\] {
+  height: 480px;
+}
 #handl-react-root .h-\[50vh\] {
   height: 50vh;
+}
+#handl-react-root .h-\[54px\] {
+  height: 54px;
+}
+#handl-react-root .h-\[78px\] {
+  height: 78px;
+}
+#handl-react-root .h-\[7px\] {
+  height: 7px;
+}
+#handl-react-root .h-\[9px\] {
+  height: 9px;
 }
 #handl-react-root .h-\[var\(--radix-select-trigger-height\)\] {
   height: var(--radix-select-trigger-height);
@@ -871,11 +958,20 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .w-1 {
   width: 0.25rem;
 }
+#handl-react-root .w-1\.5 {
+  width: 0.375rem;
+}
 #handl-react-root .w-1\/2 {
   width: 50%;
 }
 #handl-react-root .w-1\/3 {
   width: 33.333333%;
+}
+#handl-react-root .w-10 {
+  width: 2.5rem;
+}
+#handl-react-root .w-14 {
+  width: 3.5rem;
 }
 #handl-react-root .w-16 {
   width: 4rem;
@@ -952,20 +1048,51 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .w-\[130px\] {
   width: 130px;
 }
+#handl-react-root .w-\[18px\] {
+  width: 18px;
+}
 #handl-react-root .w-\[1px\] {
   width: 1px;
+}
+#handl-react-root .w-\[22px\] {
+  width: 22px;
 }
 #handl-react-root .w-\[300px\] {
   width: 300px;
 }
+#handl-react-root .w-\[42px\] {
+  width: 42px;
+}
+#handl-react-root .w-\[54px\] {
+  width: 54px;
+}
+#handl-react-root .w-\[78px\] {
+  width: 78px;
+}
+#handl-react-root .w-\[7px\] {
+  width: 7px;
+}
+#handl-react-root .w-\[9px\] {
+  width: 9px;
+}
 #handl-react-root .w-auto {
   width: auto;
+}
+#handl-react-root .w-fit {
+  width: -moz-fit-content;
+  width: fit-content;
 }
 #handl-react-root .w-full {
   width: 100%;
 }
+#handl-react-root .w-px {
+  width: 1px;
+}
 #handl-react-root .min-w-0 {
   min-width: 0px;
+}
+#handl-react-root .min-w-\[200px\] {
+  min-width: 200px;
 }
 #handl-react-root .min-w-\[8rem\] {
   min-width: 8rem;
@@ -986,8 +1113,20 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .max-w-\[150px\] {
   max-width: 150px;
 }
+#handl-react-root .max-w-\[160px\] {
+  max-width: 160px;
+}
 #handl-react-root .max-w-\[200px\] {
   max-width: 200px;
+}
+#handl-react-root .max-w-\[560px\] {
+  max-width: 560px;
+}
+#handl-react-root .max-w-\[600px\] {
+  max-width: 600px;
+}
+#handl-react-root .max-w-\[760px\] {
+  max-width: 760px;
 }
 #handl-react-root .max-w-lg {
   max-width: 32rem;
@@ -1064,6 +1203,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .cursor-default {
   cursor: default;
 }
+#handl-react-root .cursor-not-allowed {
+  cursor: not-allowed;
+}
 #handl-react-root .cursor-pointer {
   cursor: pointer;
 }
@@ -1075,6 +1217,9 @@ video:where(#handl-react-root,#handl-react-root *) {
      -moz-user-select: none;
           user-select: none;
 }
+#handl-react-root .list-none {
+  list-style-type: none;
+}
 #handl-react-root .grid-cols-1 {
   grid-template-columns: repeat(1, minmax(0, 1fr));
 }
@@ -1084,6 +1229,12 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .grid-cols-4 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
+#handl-react-root .grid-cols-\[130px_1fr\] {
+  grid-template-columns: 130px 1fr;
+}
+#handl-react-root .grid-cols-\[130px_1fr_70px\] {
+  grid-template-columns: 130px 1fr 70px;
+}
 #handl-react-root .flex-col {
   flex-direction: column;
 }
@@ -1092,6 +1243,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .flex-wrap {
   flex-wrap: wrap;
+}
+#handl-react-root .place-items-center {
+  place-items: center;
 }
 #handl-react-root .items-start {
   align-items: flex-start;
@@ -1120,6 +1274,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .justify-between {
   justify-content: space-between;
 }
+#handl-react-root .gap-0\.5 {
+  gap: 0.125rem;
+}
 #handl-react-root .gap-1 {
   gap: 0.25rem;
 }
@@ -1132,11 +1289,17 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .gap-2 {
   gap: 0.5rem;
 }
+#handl-react-root .gap-2\.5 {
+  gap: 0.625rem;
+}
 #handl-react-root .gap-3 {
   gap: 0.75rem;
 }
 #handl-react-root .gap-4 {
   gap: 1rem;
+}
+#handl-react-root .gap-5 {
+  gap: 1.25rem;
 }
 #handl-react-root .gap-6 {
   gap: 1.5rem;
@@ -1144,6 +1307,13 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .gap-x-2 {
   -moz-column-gap: 0.5rem;
        column-gap: 0.5rem;
+}
+#handl-react-root .gap-x-5 {
+  -moz-column-gap: 1.25rem;
+       column-gap: 1.25rem;
+}
+#handl-react-root .gap-y-2\.5 {
+  row-gap: 0.625rem;
 }
 #handl-react-root :is(.space-x-1 > :not([hidden]) ~ :not([hidden])) {
   --tw-space-x-reverse: 0;
@@ -1205,6 +1375,9 @@ video:where(#handl-react-root,#handl-react-root *) {
   margin-top: calc(2rem * calc(1 - var(--tw-space-y-reverse)));
   margin-bottom: calc(2rem * var(--tw-space-y-reverse));
 }
+#handl-react-root .self-center {
+  align-self: center;
+}
 #handl-react-root .overflow-auto {
   overflow: auto;
 }
@@ -1240,8 +1413,17 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .rounded {
   border-radius: 0.25rem;
 }
+#handl-react-root .rounded-2xl {
+  border-radius: 1rem;
+}
+#handl-react-root .rounded-\[10px\] {
+  border-radius: 10px;
+}
 #handl-react-root .rounded-\[2px\] {
   border-radius: 2px;
+}
+#handl-react-root .rounded-\[9px\] {
+  border-radius: 9px;
 }
 #handl-react-root .rounded-\[inherit\] {
   border-radius: inherit;
@@ -1285,6 +1467,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .border-l-2 {
   border-right-width: 2px;
 }
+#handl-react-root .border-l-\[3px\] {
+  border-right-width: 3px;
+}
 #handl-react-root .border-t {
   border-top-width: 1px;
 }
@@ -1320,8 +1505,19 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .border-border\/50 {
   border-color: hsl(var(--border) / 0.5);
 }
+#handl-react-root .border-destructive\/30 {
+  border-color: hsl(var(--destructive) / 0.3);
+}
 #handl-react-root .border-destructive\/50 {
   border-color: hsl(var(--destructive) / 0.5);
+}
+#handl-react-root .border-emerald-200 {
+  --tw-border-opacity: 1;
+  border-color: rgb(167 243 208 / var(--tw-border-opacity, 1));
+}
+#handl-react-root .border-emerald-300 {
+  --tw-border-opacity: 1;
+  border-color: rgb(110 231 183 / var(--tw-border-opacity, 1));
 }
 #handl-react-root .border-gray-200 {
   --tw-border-opacity: 1;
@@ -1373,11 +1569,21 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .border-transparent {
   border-color: transparent;
 }
+#handl-react-root .border-white\/10 {
+  border-color: rgb(255 255 255 / 0.1);
+}
+#handl-react-root .border-l-primary {
+  border-right-color: hsl(var(--primary));
+}
 #handl-react-root .border-l-transparent {
   border-right-color: transparent;
 }
 #handl-react-root .border-t-transparent {
   border-top-color: transparent;
+}
+#handl-react-root .bg-\[\#0A0F1A\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(10 15 26 / var(--tw-bg-opacity, 1));
 }
 #handl-react-root .bg-\[\#ffc323\] {
   --tw-bg-opacity: 1;
@@ -1389,12 +1595,24 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .bg-accent {
   background-color: hsl(var(--accent));
 }
+#handl-react-root .bg-amber-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(254 243 199 / var(--tw-bg-opacity, 1));
+}
+#handl-react-root .bg-amber-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(251 191 36 / var(--tw-bg-opacity, 1));
+}
 #handl-react-root .bg-amber-50 {
   --tw-bg-opacity: 1;
   background-color: rgb(255 251 235 / var(--tw-bg-opacity, 1));
 }
 #handl-react-root .bg-amber-50\/50 {
   background-color: rgb(255 251 235 / 0.5);
+}
+#handl-react-root .bg-amber-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(245 158 11 / var(--tw-bg-opacity, 1));
 }
 #handl-react-root .bg-background {
   background-color: hsl(var(--background));
@@ -1418,6 +1636,32 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .bg-destructive {
   background-color: hsl(var(--destructive));
 }
+#handl-react-root .bg-destructive\/5 {
+  background-color: hsl(var(--destructive) / 0.05);
+}
+#handl-react-root .bg-emerald-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(209 250 229 / var(--tw-bg-opacity, 1));
+}
+#handl-react-root .bg-emerald-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(52 211 153 / var(--tw-bg-opacity, 1));
+}
+#handl-react-root .bg-emerald-50 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(236 253 245 / var(--tw-bg-opacity, 1));
+}
+#handl-react-root .bg-emerald-50\/30 {
+  background-color: rgb(236 253 245 / 0.3);
+}
+#handl-react-root .bg-emerald-500 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(16 185 129 / var(--tw-bg-opacity, 1));
+}
+#handl-react-root .bg-emerald-600 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(5 150 105 / var(--tw-bg-opacity, 1));
+}
 #handl-react-root .bg-gray-400 {
   --tw-bg-opacity: 1;
   background-color: rgb(156 163 175 / var(--tw-bg-opacity, 1));
@@ -1440,17 +1684,29 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .bg-muted {
   background-color: hsl(var(--muted));
 }
+#handl-react-root .bg-muted-foreground\/30 {
+  background-color: hsl(var(--muted-foreground) / 0.3);
+}
 #handl-react-root .bg-muted\/20 {
   background-color: hsl(var(--muted) / 0.2);
 }
+#handl-react-root .bg-muted\/40 {
+  background-color: hsl(var(--muted) / 0.4);
+}
 #handl-react-root .bg-muted\/50 {
   background-color: hsl(var(--muted) / 0.5);
+}
+#handl-react-root .bg-muted\/60 {
+  background-color: hsl(var(--muted) / 0.6);
 }
 #handl-react-root .bg-popover {
   background-color: hsl(var(--popover));
 }
 #handl-react-root .bg-primary {
   background-color: hsl(var(--primary));
+}
+#handl-react-root .bg-primary-foreground {
+  background-color: hsl(var(--primary-foreground));
 }
 #handl-react-root .bg-primary\/10 {
   background-color: hsl(var(--primary) / 0.1);
@@ -1460,6 +1716,14 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .bg-primary\/5 {
   background-color: hsl(var(--primary) / 0.05);
+}
+#handl-react-root .bg-purple-100 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(243 232 255 / var(--tw-bg-opacity, 1));
+}
+#handl-react-root .bg-red-400 {
+  --tw-bg-opacity: 1;
+  background-color: rgb(248 113 113 / var(--tw-bg-opacity, 1));
 }
 #handl-react-root .bg-secondary {
   background-color: hsl(var(--secondary));
@@ -1477,6 +1741,18 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .bg-white {
   --tw-bg-opacity: 1;
   background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+}
+#handl-react-root .bg-white\/10 {
+  background-color: rgb(255 255 255 / 0.1);
+}
+#handl-react-root .bg-white\/95 {
+  background-color: rgb(255 255 255 / 0.95);
+}
+#handl-react-root .bg-white\/\[0\.18\] {
+  background-color: rgb(255 255 255 / 0.18);
+}
+#handl-react-root .bg-\[linear-gradient\(135deg\2c rgba\(10\2c 15\2c 30\2c 0\.35\)\2c rgba\(1\2c 96\2c 191\2c 0\.25\)\)\] {
+  background-image: linear-gradient(-135deg,rgba(10,15,30,0.35),rgba(1,96,191,0.25));
 }
 #handl-react-root .bg-gradient-to-br {
   background-image: linear-gradient(to bottom left, var(--tw-gradient-stops));
@@ -1497,6 +1773,16 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .from-blue-600 {
   --tw-gradient-from: #2563eb var(--tw-gradient-from-position);
   --tw-gradient-to: rgb(37 99 235 / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+#handl-react-root .from-muted\/30 {
+  --tw-gradient-from: hsl(var(--muted) / 0.3) var(--tw-gradient-from-position);
+  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+#handl-react-root .from-muted\/40 {
+  --tw-gradient-from: hsl(var(--muted) / 0.4) var(--tw-gradient-from-position);
+  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 #handl-react-root .from-primary {
@@ -1535,6 +1821,12 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .to-indigo-600 {
   --tw-gradient-to: #4f46e5 var(--tw-gradient-to-position);
 }
+#handl-react-root .to-muted\/60 {
+  --tw-gradient-to: hsl(var(--muted) / 0.6) var(--tw-gradient-to-position);
+}
+#handl-react-root .to-muted\/70 {
+  --tw-gradient-to: hsl(var(--muted) / 0.7) var(--tw-gradient-to-position);
+}
 #handl-react-root .to-primary\/10 {
   --tw-gradient-to: hsl(var(--primary) / 0.1) var(--tw-gradient-to-position);
 }
@@ -1544,6 +1836,16 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .bg-clip-text {
   -webkit-background-clip: text;
           background-clip: text;
+}
+#handl-react-root .fill-current {
+  fill: currentColor;
+}
+#handl-react-root .fill-popover {
+  fill: hsl(var(--popover));
+}
+#handl-react-root .object-cover {
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 #handl-react-root .p-0 {
   padding: 0px;
@@ -1569,6 +1871,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .p-6 {
   padding: 1.5rem;
 }
+#handl-react-root .p-7 {
+  padding: 1.75rem;
+}
 #handl-react-root .p-8 {
   padding: 2rem;
 }
@@ -1590,6 +1895,10 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .px-3 {
   padding-right: 0.75rem;
   padding-left: 0.75rem;
+}
+#handl-react-root .px-3\.5 {
+  padding-right: 0.875rem;
+  padding-left: 0.875rem;
 }
 #handl-react-root .px-4 {
   padding-right: 1rem;
@@ -1635,6 +1944,10 @@ video:where(#handl-react-root,#handl-react-root *) {
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
 }
+#handl-react-root .py-3\.5 {
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+}
 #handl-react-root .py-4 {
   padding-top: 1rem;
   padding-bottom: 1rem;
@@ -1657,11 +1970,17 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .pb-2 {
   padding-bottom: 0.5rem;
 }
+#handl-react-root .pb-2\.5 {
+  padding-bottom: 0.625rem;
+}
 #handl-react-root .pb-3 {
   padding-bottom: 0.75rem;
 }
 #handl-react-root .pb-4 {
   padding-bottom: 1rem;
+}
+#handl-react-root .pl-12 {
+  padding-right: 3rem;
 }
 #handl-react-root .pl-2 {
   padding-right: 0.5rem;
@@ -1677,6 +1996,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .pr-2\.5 {
   padding-left: 0.625rem;
+}
+#handl-react-root .pr-4 {
+  padding-left: 1rem;
 }
 #handl-react-root .pr-8 {
   padding-left: 2rem;
@@ -1708,8 +2030,20 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .align-middle {
   vertical-align: middle;
 }
+#handl-react-root .font-fraunces {
+  font-family: var(--font-fraunces), serif;
+}
+#handl-react-root .font-jetbrains {
+  font-family: var(--font-jetbrains-mono), monospace;
+}
 #handl-react-root .font-mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+#handl-react-root .font-outfit {
+  font-family: var(--font-outfit), sans-serif;
+}
+#handl-react-root .font-sans {
+  font-family: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 #handl-react-root .text-2xl {
   font-size: 1.5rem;
@@ -1725,6 +2059,30 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .text-\[0\.8rem\] {
   font-size: 0.8rem;
+}
+#handl-react-root .text-\[10px\] {
+  font-size: 10px;
+}
+#handl-react-root .text-\[11px\] {
+  font-size: 11px;
+}
+#handl-react-root .text-\[13\.5px\] {
+  font-size: 13.5px;
+}
+#handl-react-root .text-\[13px\] {
+  font-size: 13px;
+}
+#handl-react-root .text-\[14\.5px\] {
+  font-size: 14.5px;
+}
+#handl-react-root .text-\[15px\] {
+  font-size: 15px;
+}
+#handl-react-root .text-\[17px\] {
+  font-size: 17px;
+}
+#handl-react-root .text-\[9px\] {
+  font-size: 9px;
 }
 #handl-react-root .text-base {
   font-size: 1rem;
@@ -1774,20 +2132,85 @@ video:where(#handl-react-root,#handl-react-root *) {
   --tw-numeric-spacing: tabular-nums;
   font-variant-numeric: var(--tw-ordinal) var(--tw-slashed-zero) var(--tw-numeric-figure) var(--tw-numeric-spacing) var(--tw-numeric-fraction);
 }
+#handl-react-root .leading-\[1\.25\] {
+  line-height: 1.25;
+}
+#handl-react-root .leading-\[1\.2\] {
+  line-height: 1.2;
+}
+#handl-react-root .leading-\[1\.45\] {
+  line-height: 1.45;
+}
+#handl-react-root .leading-\[1\.55\] {
+  line-height: 1.55;
+}
+#handl-react-root .leading-\[1\.5\] {
+  line-height: 1.5;
+}
 #handl-react-root .leading-none {
   line-height: 1;
 }
 #handl-react-root .leading-relaxed {
   line-height: 1.625;
 }
+#handl-react-root .leading-snug {
+  line-height: 1.375;
+}
+#handl-react-root .leading-tight {
+  line-height: 1.25;
+}
+#handl-react-root .tracking-\[-0\.3px\] {
+  letter-spacing: -0.3px;
+}
+#handl-react-root .tracking-\[-0\.4px\] {
+  letter-spacing: -0.4px;
+}
+#handl-react-root .tracking-\[0\.6px\] {
+  letter-spacing: 0.6px;
+}
+#handl-react-root .tracking-\[0\.7px\] {
+  letter-spacing: 0.7px;
+}
+#handl-react-root .tracking-\[1\.2px\] {
+  letter-spacing: 1.2px;
+}
+#handl-react-root .tracking-\[1\.4px\] {
+  letter-spacing: 1.4px;
+}
 #handl-react-root .tracking-tight {
   letter-spacing: -0.025em;
+}
+#handl-react-root .tracking-wide {
+  letter-spacing: 0.025em;
+}
+#handl-react-root .tracking-wider {
+  letter-spacing: 0.05em;
 }
 #handl-react-root .tracking-widest {
   letter-spacing: 0.1em;
 }
+#handl-react-root .text-\[\#7DD3FC\] {
+  --tw-text-opacity: 1;
+  color: rgb(125 211 252 / var(--tw-text-opacity, 1));
+}
+#handl-react-root .text-\[\#A8C5EE\] {
+  --tw-text-opacity: 1;
+  color: rgb(168 197 238 / var(--tw-text-opacity, 1));
+}
+#handl-react-root .text-\[\#FCD34D\] {
+  --tw-text-opacity: 1;
+  color: rgb(252 211 77 / var(--tw-text-opacity, 1));
+}
 #handl-react-root .text-accent-foreground {
   color: hsl(var(--accent-foreground));
+}
+#handl-react-root .text-amber-500 {
+  --tw-text-opacity: 1;
+  color: rgb(245 158 11 / var(--tw-text-opacity, 1));
+}
+#handl-react-root .text-amber-600 {
+  --tw-text-opacity: 1;
+  color: rgb(217 119 6 / var(--tw-text-opacity, 1));
 }
 #handl-react-root .text-amber-700 {
   --tw-text-opacity: 1;
@@ -1795,6 +2218,14 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .text-amber-700\/30 {
   color: rgb(180 83 9 / 0.3);
+}
+#handl-react-root .text-amber-800 {
+  --tw-text-opacity: 1;
+  color: rgb(146 64 14 / var(--tw-text-opacity, 1));
+}
+#handl-react-root .text-amber-900 {
+  --tw-text-opacity: 1;
+  color: rgb(120 53 15 / var(--tw-text-opacity, 1));
 }
 #handl-react-root .text-blue-700 {
   --tw-text-opacity: 1;
@@ -1822,6 +2253,18 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .text-destructive-foreground {
   color: hsl(var(--destructive-foreground));
+}
+#handl-react-root .text-emerald-600 {
+  --tw-text-opacity: 1;
+  color: rgb(5 150 105 / var(--tw-text-opacity, 1));
+}
+#handl-react-root .text-emerald-700 {
+  --tw-text-opacity: 1;
+  color: rgb(4 120 87 / var(--tw-text-opacity, 1));
+}
+#handl-react-root .text-emerald-900 {
+  --tw-text-opacity: 1;
+  color: rgb(6 78 59 / var(--tw-text-opacity, 1));
 }
 #handl-react-root .text-foreground {
   color: hsl(var(--foreground));
@@ -1869,6 +2312,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .text-muted-foreground {
   color: hsl(var(--muted-foreground));
 }
+#handl-react-root .text-muted-foreground\/70 {
+  color: hsl(var(--muted-foreground) / 0.7);
+}
 #handl-react-root .text-orange-600 {
   --tw-text-opacity: 1;
   color: rgb(234 88 12 / var(--tw-text-opacity, 1));
@@ -1887,6 +2333,10 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .text-primary\/70 {
   color: hsl(var(--primary) / 0.7);
+}
+#handl-react-root .text-purple-700 {
+  --tw-text-opacity: 1;
+  color: rgb(126 34 206 / var(--tw-text-opacity, 1));
 }
 #handl-react-root .text-secondary-foreground {
   color: hsl(var(--secondary-foreground));
@@ -1914,6 +2364,12 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .underline {
   text-decoration-line: underline;
 }
+#handl-react-root .line-through {
+  text-decoration-line: line-through;
+}
+#handl-react-root .no-underline {
+  text-decoration-line: none;
+}
 #handl-react-root .underline-offset-2 {
   text-underline-offset: 2px;
 }
@@ -1929,6 +2385,12 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .opacity-70 {
   opacity: 0.7;
 }
+#handl-react-root .opacity-90 {
+  opacity: 0.9;
+}
+#handl-react-root .opacity-95 {
+  opacity: 0.95;
+}
 #handl-react-root .shadow {
   --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
@@ -1937,6 +2399,11 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .shadow-2xl {
   --tw-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
   --tw-shadow-colored: 0 25px 50px -12px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+#handl-react-root .shadow-\[0_8px_32px_rgba\(0\2c 0\2c 0\2c 0\.3\)\] {
+  --tw-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  --tw-shadow-colored: 0 8px 32px var(--tw-shadow-color);
   box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 #handl-react-root .shadow-lg {
@@ -1981,6 +2448,18 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .filter {
   filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
+#handl-react-root .transition {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, -webkit-backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+#handl-react-root .transition-\[transform\2c box-shadow\] {
+  transition-property: transform,box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
 #handl-react-root .transition-all {
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -1993,6 +2472,11 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .transition-opacity {
   transition-property: opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+#handl-react-root .transition-shadow {
+  transition-property: box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
 }
@@ -2058,11 +2542,24 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .placeholder\:text-muted-foreground::placeholder {
   color: hsl(var(--muted-foreground));
 }
+#handl-react-root .last\:border-b-0:last-child {
+  border-bottom-width: 0px;
+}
+#handl-react-root .odd\:bg-card:nth-child(odd) {
+  background-color: hsl(var(--card));
+}
+#handl-react-root .even\:bg-muted\/40:nth-child(even) {
+  background-color: hsl(var(--muted) / 0.4);
+}
 #handl-react-root .focus-within\:relative:focus-within {
   position: relative;
 }
 #handl-react-root .focus-within\:z-20:focus-within {
   z-index: 20;
+}
+#handl-react-root .hover\:-translate-y-\[2px\]:hover {
+  --tw-translate-y: -2px;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 #handl-react-root .hover\:scale-105:hover {
   --tw-scale-x: 1.05;
@@ -2110,6 +2607,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .hover\:bg-primary:hover {
   background-color: hsl(var(--primary));
 }
+#handl-react-root .hover\:bg-primary\/10:hover {
+  background-color: hsl(var(--primary) / 0.1);
+}
 #handl-react-root .hover\:bg-primary\/80:hover {
   background-color: hsl(var(--primary) / 0.8);
 }
@@ -2118,6 +2618,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .hover\:bg-secondary\/80:hover {
   background-color: hsl(var(--secondary) / 0.8);
+}
+#handl-react-root .hover\:bg-white\/20:hover {
+  background-color: rgb(255 255 255 / 0.2);
 }
 #handl-react-root .hover\:from-blue-700:hover {
   --tw-gradient-from: #1d4ed8 var(--tw-gradient-from-position);
@@ -2141,6 +2644,12 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .hover\:text-foreground:hover {
   color: hsl(var(--foreground));
 }
+#handl-react-root .hover\:text-muted-foreground:hover {
+  color: hsl(var(--muted-foreground));
+}
+#handl-react-root .hover\:text-primary:hover {
+  color: hsl(var(--primary));
+}
 #handl-react-root .hover\:text-primary-foreground:hover {
   color: hsl(var(--primary-foreground));
 }
@@ -2156,6 +2665,11 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .hover\:opacity-100:hover {
   opacity: 1;
+}
+#handl-react-root .hover\:shadow-md:hover {
+  --tw-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --tw-shadow-colored: 0 4px 6px -1px var(--tw-shadow-color), 0 2px 4px -2px var(--tw-shadow-color);
+  box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
 }
 #handl-react-root .hover\:shadow-xl:hover {
   --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
@@ -2234,6 +2748,17 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root :is(.group:hover .group-hover\:translate-x-1) {
   --tw-translate-x: 0.25rem;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+#handl-react-root :is(.group:hover .group-hover\:scale-110) {
+  --tw-scale-x: 1.1;
+  --tw-scale-y: 1.1;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+#handl-react-root :is(.group:hover .group-hover\:bg-\[linear-gradient\(135deg\2c rgba\(10\2c 15\2c 30\2c 0\.5\)\2c rgba\(1\2c 96\2c 191\2c 0\.4\)\)\]) {
+  background-image: linear-gradient(-135deg,rgba(10,15,30,0.5),rgba(1,96,191,0.4));
+}
+#handl-react-root :is(.group:hover .group-hover\:underline) {
+  text-decoration-line: underline;
 }
 #handl-react-root :is(.group:active .group-active\:scale-95) {
   --tw-scale-x: .95;
@@ -2428,12 +2953,24 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 @media (min-width: 640px) {
 
+  #handl-react-root .sm\:block {
+    display: block;
+  }
+
   #handl-react-root .sm\:h-10 {
     height: 2.5rem;
   }
 
   #handl-react-root .sm\:grid-cols-2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #handl-react-root .sm\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  #handl-react-root .sm\:grid-cols-\[180px_1fr\] {
+    grid-template-columns: 180px 1fr;
   }
 
   #handl-react-root .sm\:flex-row {
@@ -2470,6 +3007,11 @@ video:where(#handl-react-root,#handl-react-root *) {
     padding: 1.5rem;
   }
 
+  #handl-react-root .sm\:px-14 {
+    padding-right: 3.5rem;
+    padding-left: 3.5rem;
+  }
+
   #handl-react-root .sm\:px-4 {
     padding-right: 1rem;
     padding-left: 1rem;
@@ -2480,6 +3022,11 @@ video:where(#handl-react-root,#handl-react-root *) {
     padding-left: 1.5rem;
   }
 
+  #handl-react-root .sm\:py-12 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+
   #handl-react-root .sm\:text-left {
     text-align: right;
   }
@@ -2487,6 +3034,11 @@ video:where(#handl-react-root,#handl-react-root *) {
   #handl-react-root .sm\:text-2xl {
     font-size: 1.5rem;
     line-height: 2rem;
+  }
+
+  #handl-react-root .sm\:text-4xl {
+    font-size: 2.25rem;
+    line-height: 2.5rem;
   }
 
   #handl-react-root .sm\:text-base {

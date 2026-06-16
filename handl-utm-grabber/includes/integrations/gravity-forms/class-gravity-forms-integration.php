@@ -91,6 +91,42 @@ class Gravity_Forms_Integration extends Handl_Integration {
 		return $results;
 	}
 
+	protected function detect_integrated_params( $form_id ) {
+		if ( ! $this->is_active() ) {
+			return null;
+		}
+
+		$form = \GFAPI::get_form( (int) $form_id );
+		if ( ! $form || ! isset( $form['fields'] ) || ! is_array( $form['fields'] ) ) {
+			return null;
+		}
+
+		$tracked = array_map( 'strval', $this->get_tracked_params() );
+		$present = array();
+
+		foreach ( $form['fields'] as $field ) {
+			$input_name = isset( $field->inputName ) ? (string) $field->inputName : ( isset( $field['inputName'] ) ? (string) $field['inputName'] : '' );
+			$label      = isset( $field->label ) ? (string) $field->label : ( isset( $field['label'] ) ? (string) $field['label'] : '' );
+
+			foreach ( $tracked as $param ) {
+				if ( in_array( $param, $present, true ) ) {
+					continue;
+				}
+				// Primary: inputName === param.
+				if ( $input_name === $param ) {
+					$present[] = $param;
+					continue;
+				}
+				// Legacy
+				if ( strpos( $label, 'HandL' ) !== false && strpos( $label, $param ) !== false ) {
+					$present[] = $param;
+				}
+			}
+		}
+
+		return array_values( array_unique( $present ) );
+	}
+
 	/**
 	 * Append HandL hidden fields to a form for any param not already present.
 	 *

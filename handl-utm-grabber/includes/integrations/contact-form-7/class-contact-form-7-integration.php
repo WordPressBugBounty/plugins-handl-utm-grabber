@@ -148,6 +148,31 @@ class Contact_Form_7_Integration extends Handl_Integration {
 		return $results;
 	}
 
+	protected function detect_integrated_params( $form_id ) {
+		if ( ! $this->is_active() ) {
+			return null;
+		}
+
+		$cf = \WPCF7_ContactForm::get_instance( (int) $form_id );
+		if ( ! $cf ) {
+			return null;
+		}
+
+		$props     = $cf->get_properties();
+		$form_text = isset( $props['form'] ) ? (string) $props['form'] : '';
+
+		$present = array();
+		foreach ( $this->get_tracked_params() as $param ) {
+			// Matches marker-block + legacy stray `[hidden {param}_cf7 ...]` tags.
+			$pattern = '/\[hidden\s+' . preg_quote( $param . '_cf7', '/' ) . '[^\]]*\]/';
+			if ( preg_match( $pattern, $form_text ) === 1 ) {
+				$present[] = (string) $param;
+			}
+		}
+
+		return $present;
+	}
+
 	/**
 	 * Remove all content between (and including) the provided markers, along with any following single newline to prevent leftover blank lines.
 	 *

@@ -38,6 +38,80 @@ class Handl_Integrations_Manager {
 		$this->integrations[ $integration->get_slug() ] = $integration;
 	}
 
+	/** @return array<string, Handl_Integration> */
+	public function get_integrations() {
+		return $this->integrations;
+	}
+
+	/** @return Handl_Integration|null */
+	public function get_integration( $slug ) {
+		return isset( $this->integrations[ $slug ] ) ? $this->integrations[ $slug ] : null;
+	}
+
+	/**
+	 * Roll up per-form status for one integration. @param string $slug
+	 * @return array{slug:string,active:bool,status:string,total_forms:int,integrated_forms:int,forms:array} status: complete (all forms complete)|partial|none.
+	 */
+	public function get_integration_status( $slug ) {
+		$integration = $this->get_integration( $slug );
+
+		if ( ! $integration || ! $integration->is_active() ) {
+			return array(
+				'slug'             => $integration ? $integration->get_slug() : (string) $slug,
+				'active'           => false,
+				'status'           => 'none',
+				'total_forms'      => 0,
+				'integrated_forms' => 0,
+				'forms'            => array(),
+			);
+		}
+
+		$forms            = array_values( $integration->get_forms() );
+		$form_statuses    = array();
+		$integrated_forms = 0;
+		$complete_forms   = 0;
+
+		foreach ( $forms as $form ) {
+			$status          = $integration->get_form_status( $form['id'] );
+			$status['title'] = isset( $form['title'] ) ? (string) $form['title'] : '';
+			$form_statuses[] = $status;
+
+			if ( $status['status'] === 'complete' ) {
+				$complete_forms++;
+				$integrated_forms++;
+			} elseif ( $status['status'] === 'partial' ) {
+				$integrated_forms++;
+			}
+		}
+
+		$total = count( $form_statuses );
+		if ( $integrated_forms === 0 ) {
+			$overall = 'none';
+		} elseif ( $total > 0 && $complete_forms === $total ) {
+			$overall = 'complete';
+		} else {
+			$overall = 'partial';
+		}
+
+		return array(
+			'slug'             => $integration->get_slug(),
+			'active'           => true,
+			'status'           => $overall,
+			'total_forms'      => $total,
+			'integrated_forms' => $integrated_forms,
+			'forms'            => $form_statuses,
+		);
+	}
+
+	/** @return array<string, array> Status roll-up keyed by integration slug. */
+	public function get_all_statuses() {
+		$out = array();
+		foreach ( $this->integrations as $slug => $integration ) {
+			$out[ $slug ] = $this->get_integration_status( $slug );
+		}
+		return $out;
+	}
+
 	/**
 	 * @param array $data
 	 * @return array
@@ -59,12 +133,12 @@ class Handl_Integrations_Manager {
 	 */
 	private function authorize_and_resolve() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( 'Unauthorized access. Admin privileges required.' );
+			wp_send_json_error( array( 'message' => 'Unauthorized access. Admin privileges required.' ) );
 			return null;
 		}
 
 		if ( ! check_ajax_referer( self::NONCE_ACTION, 'nonce', false ) ) {
-			wp_send_json_error( 'Invalid nonce.' );
+			wp_send_json_error( array( 'message' => 'Invalid nonce.' ) );
 			return null;
 		}
 
@@ -74,7 +148,7 @@ class Handl_Integrations_Manager {
 		}
 
 		if ( ! isset( $this->integrations[ $slug ] ) ) {
-			wp_send_json_error( 'Unknown integration.' );
+			wp_send_json_error( array( 'message' => 'Unknown integration.' ) );
 			return null;
 		}
 
@@ -83,12 +157,12 @@ class Handl_Integrations_Manager {
 
 	public function ajax_list() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( 'Unauthorized access. Admin privileges required.' );
+			wp_send_json_error( array( 'message' => 'Unauthorized access. Admin privileges required.' ) );
 			return;
 		}
 
 		if ( ! check_ajax_referer( self::NONCE_ACTION, 'nonce', false ) ) {
-			wp_send_json_error( 'Invalid nonce.' );
+			wp_send_json_error( array( 'message' => 'Invalid nonce.' ) );
 			return;
 		}
 
@@ -107,7 +181,7 @@ class Handl_Integrations_Manager {
 		}
 
 		if ( ! $integration->is_active() ) {
-			wp_send_json_error( 'Integration is not active on this site.' );
+			wp_send_json_error( array( 'message' => 'Integration is not active on this site.' ) );
 			return;
 		}
 
@@ -121,13 +195,13 @@ class Handl_Integrations_Manager {
 		}
 
 		if ( ! $integration->is_active() ) {
-			wp_send_json_error( 'Integration is not active on this site.' );
+			wp_send_json_error( array( 'message' => 'Integration is not active on this site.' ) );
 			return;
 		}
 
 		$action = isset( $_POST['action_type'] ) ? sanitize_key( wp_unslash( $_POST['action_type'] ) ) : 'add';
 		if ( ! in_array( $action, array( 'add', 'remove' ), true ) ) {
-			wp_send_json_error( 'Invalid action.' );
+			wp_send_json_error( array( 'message' => 'Invalid action.' ) );
 			return;
 		}
 
@@ -135,7 +209,7 @@ class Handl_Integrations_Manager {
 		$fields   = $this->decode_array_param( 'fields' );
 
 		if ( empty( $form_ids ) ) {
-			wp_send_json_error( 'No forms selected.' );
+			wp_send_json_error( array( 'message' => 'No forms selected.' ) );
 			return;
 		}
 
@@ -143,7 +217,7 @@ class Handl_Integrations_Manager {
 			$allowed = $integration->get_tracked_params();
 			$fields  = array_values( array_intersect( $fields, $allowed ) );
 			if ( empty( $fields ) ) {
-				wp_send_json_error( 'No valid fields selected.' );
+				wp_send_json_error( array( 'message' => 'No valid fields selected.' ) );
 				return;
 			}
 		}
@@ -161,6 +235,7 @@ class Handl_Integrations_Manager {
 	 * @param string $key
 	 * @return array
 	 */
+	/** Decode a JSON assoc-array POST param (e.g. CF7's `also_add_to_email`). @return array */
 	private function decode_assoc_param( $key ) {
 		if ( ! isset( $_POST[ $key ] ) ) {
 			return array();

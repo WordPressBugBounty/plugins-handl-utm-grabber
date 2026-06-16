@@ -16,6 +16,7 @@ class Handl_React_Pages_Manager
 
         // Register admin page
         add_action('admin_menu', [$this, 'add_react_menu_pages'],1);
+        add_action('admin_menu', [$this, 'reorder_setup_submenu'], 999);
 
         add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_scripts']);
     }
@@ -54,6 +55,35 @@ class Handl_React_Pages_Manager
             [ $this, 'render_analytics_page' ]
         );
 
+        add_submenu_page(
+            'handl-utm-grabber.php',
+            'UTM Grabber Setup',
+            'Setup',
+            'manage_options',
+            'handl-onboarding',
+            [ $this, 'render_onboarding_page' ]
+        );
+    }
+
+    /**
+     * Move the "Setup" submenu to the top, above the default UTM item.
+     */
+    public function reorder_setup_submenu()
+    {
+        global $submenu;
+        $parent = 'handl-utm-grabber.php';
+        if ( empty( $submenu[ $parent ] ) ) {
+            return;
+        }
+        foreach ( $submenu[ $parent ] as $i => $item ) {
+            if ( isset( $item[2] ) && $item[2] === 'handl-onboarding' ) {
+                $setup = $item;
+                unset( $submenu[ $parent ][ $i ] );
+                array_unshift( $submenu[ $parent ], $setup );
+                $submenu[ $parent ] = array_values( $submenu[ $parent ] );
+                break;
+            }
+        }
     }
 
     /**
@@ -65,6 +95,9 @@ class Handl_React_Pages_Manager
     }
     public function render_analytics_page() {
         $this->render_react_container( 'handl_analytics' );
+    }
+    public function render_onboarding_page() {
+        $this->render_react_container( 'handl_onboarding' );
     }
     private function render_react_container($container_id)
     {
@@ -85,6 +118,8 @@ class Handl_React_Pages_Manager
         $allowed_hooks = [
             'toplevel_page_handl-utm-grabber',
             'utm_page_handl_analytics',
+            'utm_page_handl-onboarding',
+            'admin_page_handl-onboarding',
         ];
         if (! in_array($hook_suffix, $allowed_hooks, true)) {
             return;
@@ -97,6 +132,13 @@ class Handl_React_Pages_Manager
         }
 
         $script_asset = require $script_asset_path;
+
+        wp_enqueue_style(
+            'handl-react-fonts',
+            'https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,800&family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap',
+            [],
+            null
+        );
 
         wp_enqueue_script(
             'handl-react-main-script',
@@ -129,9 +171,14 @@ class Handl_React_Pages_Manager
             ),
             $script_asset['version']
         );
+        $current_user = wp_get_current_user();
         $wp_api_props = apply_filters( 'handl_react_admin_localize', [
-            'ajax_url' => admin_url('admin-ajax.php'),
-            'nonce'    => array(),
+            'ajax_url'     => admin_url('admin-ajax.php'),
+            'nonce'        => array(),
+            'current_user' => array(
+                'email'      => $current_user ? $current_user->user_email : '',
+                'first_name' => $current_user ? ( get_user_meta( $current_user->ID, 'first_name', true ) ?: '' ) : '',
+            ),
         ] );
         wp_localize_script('handl-react-main-script', 'wpAPIProps', $wp_api_props);
         // wp_localize_script('handl-react-main-script', 'appProps', [

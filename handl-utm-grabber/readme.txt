@@ -3,12 +3,12 @@ Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
 Tested up to: 7.0
-Stable tag: 2.9.2
-Requires PHP: 5.3
+Stable tag: 2.9.3
+Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-The WordPress attribution plugin used by over 200,000+ sites to capture UTMs, gclid, and source data in your forms, CRM, and revenue workflows.
+The WordPress attribution plugin used by over 250,000+ sites to capture UTMs, gclid, and source data in your forms, CRM, and revenue workflows.
 
 == Description ==
 = UTM Tracking for WordPress (Built for Attribution) =
@@ -105,7 +105,7 @@ Upgrade to unlock the full attribution stack and advanced controls:
 == Frequently Asked Questions ==
 
 = Is this plugin really suitable for serious attribution work? =
-Yes. UTM Grabber is built specifically for attribution accuracy on WordPress and is trusted by over 200,000 sites. If your team runs paid traffic and needs dependable source data in forms and CRM, this is exactly what it is designed for.
+Yes. UTM Grabber is built specifically for attribution accuracy on WordPress and is trusted by over 250,000 sites. If your team runs paid traffic and needs dependable source data in forms and CRM, this is exactly what it is designed for.
 
 = What can I track with the free version? =
 The free plugin tracks core UTM parameters (`utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content`) plus `gclid`, along with key context like landing page and referrer.
@@ -140,6 +140,9 @@ Yes. UTM Grabber is built with a first-party data approach and supports GDPR-ori
 1. Zapier Integration
 
 == Changelog ==
+= 2.9.3 =
+* Ninja Form XSS vulnerability fix
+
 = 2.9.2 =
 * Reduce size of the plugin
 

@@ -1,7 +1,7 @@
 jQuery(function($) {
     var qvars = getUrlVars()
 
-    $.each([ 'utm_source','utm_medium','utm_term', 'utm_content', 'utm_campaign', 'gclid', 'email', 'username' ], function( i,v ) {
+    $.each([ 'utm_source','utm_medium','utm_term', 'utm_content', 'utm_campaign', 'gclid', 'handl_landing_page', 'handl_original_ref', 'handl_ip', 'email', 'username' ], function( i,v ) {
 
         var cookie_field = GetQVars(v,qvars)
 
