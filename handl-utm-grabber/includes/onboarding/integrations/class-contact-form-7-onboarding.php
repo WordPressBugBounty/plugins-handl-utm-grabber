@@ -3,6 +3,8 @@ namespace Handl\UtmrabberFree\Onboarding;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
+use Handl\UtmrabberFree\Integrations\Contact_Form_7_Integration;
+
 class Contact_Form_7_Onboarding extends Handl_Integration_Onboarding {
 
 	public function get_slug() {
@@ -15,7 +17,7 @@ class Contact_Form_7_Onboarding extends Handl_Integration_Onboarding {
 		// CF7 5.8+ can use a SHA-1 hash or numeric id in shortcode.
 		$hash = '';
 		if ( class_exists( '\WPCF7_ContactForm' ) ) {
-			$cf = \WPCF7_ContactForm::get_instance( (int) $form_id );
+			$cf = Contact_Form_7_Integration::load_form( (int) $form_id );
 			if ( $cf && method_exists( $cf, 'hash' ) ) {
 				$hash = (string) $cf->hash();
 			}

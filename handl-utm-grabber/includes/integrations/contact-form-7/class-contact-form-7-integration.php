@@ -27,6 +27,34 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	const MAIL_START = '/* HandL UTM start */';
 	const MAIL_END   = '/* HandL UTM end */';
 
+	/**
+	 * Load a CF7 form without leaving WPCF7_ContactForm::$current set.
+	 *
+	 * CF7's get_instance() always updates the global "current" form. Our admin
+	 * code (setup notice, health checks, AJAX) runs before the CF7 list page
+	 * renders; if $current is left set, CF7 shows that form's editor instead of
+	 * the form list.
+	 *
+	 * @param int|string $form_id
+	 * @return \WPCF7_ContactForm|null
+	 */
+	public static function load_form( $form_id ) {
+		if ( ! class_exists( 'WPCF7_ContactForm' ) ) {
+			return null;
+		}
+
+		$previous = \WPCF7_ContactForm::get_current();
+		$cf       = \WPCF7_ContactForm::get_instance( $form_id );
+
+		if ( $previous instanceof \WPCF7_ContactForm ) {
+			\WPCF7_ContactForm::get_instance( $previous );
+		} else {
+			\WPCF7_ContactForm::get_instance( 0 );
+		}
+
+		return $cf;
+	}
+
 	public function get_slug() {
 		return 'contact-form-7';
 	}
@@ -73,7 +101,7 @@ class Contact_Form_7_Integration extends Handl_Integration {
 
 		foreach ( $form_ids as $form_id ) {
 			$form_id = (int) $form_id;
-			$cf      = \WPCF7_ContactForm::get_instance( $form_id );
+			$cf      = self::load_form( $form_id );
 			if ( ! $cf ) {
 				$results[] = array(
 					'form_id' => (string) $form_id,
@@ -153,7 +181,7 @@ class Contact_Form_7_Integration extends Handl_Integration {
 			return null;
 		}
 
-		$cf = \WPCF7_ContactForm::get_instance( (int) $form_id );
+		$cf = self::load_form( (int) $form_id );
 		if ( ! $cf ) {
 			return null;
 		}

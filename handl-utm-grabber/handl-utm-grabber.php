@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.4
+ * Version: 2.9.5
  * Author URI: https://www.utmgrabber.com/
 */
 
@@ -756,7 +756,7 @@ function handl_utm_fields_tag_generator_panel($contact_form, $args = '') {
     </div>
     <?php
 }
-add_action('admin_init', 'handl_add_utm_fields_tag_generator', 20);
+add_action( 'wpcf7_admin_init', 'handl_add_utm_fields_tag_generator', 20 );
 
 add_action('admin_enqueue_scripts', function() {
     global $pagenow;
