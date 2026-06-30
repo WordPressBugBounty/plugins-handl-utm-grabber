@@ -28,12 +28,17 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	const MAIL_END   = '/* HandL UTM end */';
 
 	/**
-	 * Load a CF7 form without leaving WPCF7_ContactForm::$current set.
+	 * Load a single CF7 form without touching WPCF7_ContactForm::$current.
 	 *
-	 * CF7's get_instance() always updates the global "current" form. Our admin
-	 * code (setup notice, health checks, AJAX) runs before the CF7 list page
-	 * renders; if $current is left set, CF7 shows that form's editor instead of
-	 * the form list.
+	 * CF7's get_instance()/wpcf7_contact_form() always overwrite the global
+	 * "current" form as a side effect. Our admin code (setup notice, health
+	 * checks, AJAX) runs before the CF7 list page renders; if $current is left
+	 * set, CF7's wpcf7_admin_management_page() shows that form's editor instead
+	 * of the form list.
+	 *
+	 * WPCF7_ContactForm::find() is the only public accessor that returns form
+	 * objects without assigning $current (the constructor is private), so we
+	 * query by post ID through it.
 	 *
 	 * @param int|string $form_id
 	 * @return \WPCF7_ContactForm|null
@@ -43,16 +48,17 @@ class Contact_Form_7_Integration extends Handl_Integration {
 			return null;
 		}
 
-		$previous = \WPCF7_ContactForm::get_current();
-		$cf       = \WPCF7_ContactForm::get_instance( $form_id );
-
-		if ( $previous instanceof \WPCF7_ContactForm ) {
-			\WPCF7_ContactForm::get_instance( $previous );
-		} else {
-			\WPCF7_ContactForm::get_instance( 0 );
+		$form_id = (int) $form_id;
+		if ( $form_id <= 0 ) {
+			return null;
 		}
 
-		return $cf;
+		$forms = \WPCF7_ContactForm::find( array(
+			'p'              => $form_id,
+			'posts_per_page' => 1,
+		) );
+
+		return $forms ? $forms[0] : null;
 	}
 
 	public function get_slug() {

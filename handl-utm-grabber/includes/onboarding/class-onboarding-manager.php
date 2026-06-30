@@ -181,11 +181,14 @@ class Handl_Onboarding_Manager {
 
 			$forms_with_pages = array();
 			foreach ( $forms as $form ) {
-				$pages = $onboarding ? $onboarding->find_host_pages( $form['id'] ) : array();
+				$pages  = $onboarding ? $onboarding->find_host_pages( $form['id'] ) : array();
+				$status = $integration->get_form_status( $form['id'] );
 				$forms_with_pages[] = array(
 					'id'         => (string) $form['id'],
 					'title'      => (string) $form['title'],
 					'host_pages' => $pages,
+					'status'     => $status['status'],
+					'missing'    => $status['missing'],
 				);
 			}
 
