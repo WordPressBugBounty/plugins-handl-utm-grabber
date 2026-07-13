@@ -20,8 +20,68 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * which fills any hidden field whose `custom_id` matches a tracked UTM from
  * cookie. So we don't need to set `field_value`, dynamic tags, or shortcodes —
  * we just inject the field with the right `custom_id`.
+ *
+ * Identification: `param_for_field()` is the single source of truth (static
+ * `custom_id`, or the `cookies` dynamic tag); detection, Remove, and the
+ * submission listener all use it.
  */
 class Elementor_Integration extends Handl_Integration {
+
+	/**
+	 * Resolve which tracked param an Elementor form field feeds. Accepts a
+	 * `form_fields` entry either raw (from `_elementor_data`) or resolved
+	 * (from `get_settings_for_display()`; `__dynamic__` survives resolution).
+	 *
+	 * @param array $field One `form_fields` entry.
+	 * @return string|null Tracked param, or null if untracked.
+	 */
+	public static function param_for_field( $field ) {
+		if ( ! is_array( $field ) ) {
+			return null;
+		}
+		$tracked = handl_lite_tracking_params();
+		$dynamic = ( isset( $field['__dynamic__'] ) && is_array( $field['__dynamic__'] ) ) ? $field['__dynamic__'] : array();
+
+		// (1) Value wired to our Parameters tag (docs-guide setup).
+		$param = self::cookies_tag_param( isset( $dynamic['field_value'] ) ? $dynamic['field_value'] : '' );
+		if ( $param !== null && in_array( $param, $tracked, true ) ) {
+			return $param;
+		}
+
+		// (2) custom_id === param (one-click Add flow / manually keyed).
+		$cid = isset( $field['custom_id'] ) ? (string) $field['custom_id'] : '';
+		if ( in_array( $cid, $tracked, true ) ) {
+			return $cid;
+		}
+
+		// (3) Tag wired to the field ID only.
+		$param = self::cookies_tag_param( isset( $dynamic['custom_id'] ) ? $dynamic['custom_id'] : '' );
+		if ( $param !== null && in_array( $param, $tracked, true ) ) {
+			return $param;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Param selected in a serialized `cookies` dynamic-tag string. Elementor
+	 * omits control defaults from the settings JSON, so empty settings mean
+	 * the tag's default (`utm_source`).
+	 *
+	 * @param string $tag
+	 * @return string|null Param name, or null if not our tag.
+	 */
+	private static function cookies_tag_param( $tag ) {
+		$tag = (string) $tag;
+		if ( $tag === '' || strpos( $tag, 'name="cookies"' ) === false ) {
+			return null;
+		}
+		if ( ! preg_match( '/settings="([^"]*)"/', $tag, $m ) ) {
+			return 'utm_source';
+		}
+		$settings = json_decode( rawurldecode( $m[1] ), true );
+		return ( is_array( $settings ) && ! empty( $settings['cookies'] ) ) ? (string) $settings['cookies'] : 'utm_source';
+	}
 
 	public function get_slug() {
 		return 'elementor';
@@ -235,27 +295,30 @@ class Elementor_Integration extends Handl_Integration {
 		$present = array();
 
 		foreach ( $fields as $field ) {
-			$type  = isset( $field['field_type'] ) ? (string) $field['field_type'] : '';
-			$cid   = isset( $field['custom_id'] ) ? (string) $field['custom_id'] : '';
-			$label = isset( $field['field_label'] ) ? (string) $field['field_label'] : '';
+			if ( ! is_array( $field ) ) {
+				continue;
+			}
+			$param = self::param_for_field( $field );
 
-			foreach ( $tracked as $param ) {
-				if ( in_array( $param, $present, true ) ) {
-					continue;
+			// Legacy fallback: HandL-labelled field referencing the param.
+			if ( $param === null ) {
+				$label = isset( $field['field_label'] ) ? (string) $field['field_label'] : '';
+				if ( strpos( $label, 'HandL' ) !== false ) {
+					foreach ( $tracked as $p ) {
+						if ( strpos( $label, $p ) !== false ) {
+							$param = $p;
+							break;
+						}
+					}
 				}
-				// Primary: hidden field with custom_id === param.
-				if ( $type === 'hidden' && $cid === $param ) {
-					$present[] = $param;
-					continue;
-				}
-				// Legacy: HandL-labelled field referencing the param.
-				if ( strpos( $label, 'HandL' ) !== false && strpos( $label, $param ) !== false ) {
-					$present[] = $param;
-				}
+			}
+
+			if ( $param !== null && ! in_array( $param, $present, true ) ) {
+				$present[] = $param;
 			}
 		}
 
-		return array_values( array_unique( $present ) );
+		return $present;
 	}
 
 	/**
@@ -365,41 +428,19 @@ class Elementor_Integration extends Handl_Integration {
 	}
 
 	/**
-	 * Drop every field that looks HandL-managed, via either of two paths:
+	 * Drop every field `param_for_field()` considers HandL-managed.
 	 *
-	 *   (a) A hidden field whose `custom_id` is one of the tracked params.
-	 *       Covers our own one-click injections and any field a user added
-	 *       manually with the UTM as the field id.
-	 *
-	 *   (b) A field — any type, any `custom_id` — whose default value is
-	 *       wired to the `Cookies` dynamic tag registered in
-	 *       `lite/elementor.php`
 	 * @param array $widget Reference; mutated in place.
 	 * @return array{message: string, removed: int}
 	 */
 	private function remove_fields_from_widget( &$widget ) {
-		$tracked = array_map( 'strval', $this->get_tracked_params() );
-		$before  = count( $widget['settings']['form_fields'] );
+		$before = count( $widget['settings']['form_fields'] );
 
 		$widget['settings']['form_fields'] = array_values(
 			array_filter(
 				$widget['settings']['form_fields'],
-				function ( $field ) use ( $tracked ) {
-					$type = isset( $field['field_type'] ) ? (string) $field['field_type'] : '';
-					$cid  = isset( $field['custom_id'] ) ? (string) $field['custom_id'] : '';
-					$dyn  = isset( $field['__dynamic__']['field_value'] ) ? (string) $field['__dynamic__']['field_value'] : '';
-
-					// (a) Our custom_id-flow fields.
-					if ( $type === 'hidden' && in_array( $cid, $tracked, true ) ) {
-						return false;
-					}
-
-					// (b) Any field wired to our `Cookies` dynamic tag.
-					if ( $dyn !== '' && strpos( $dyn, 'name="cookies"' ) !== false ) {
-						return false;
-					}
-
-					return true;
+				function ( $field ) {
+					return ! is_array( $field ) || self::param_for_field( $field ) === null;
 				}
 			)
 		);

@@ -46,6 +46,17 @@ function handl_register_legacy_options() {
 			'description'       => 'HTTP Only Cookies',
 		]
 	);
+
+	register_setting(
+		'handl-utm-grabber-settings-group-new',
+		'handl_ai_insights_enabled',
+		[
+			'type'              => 'boolean',
+			'default'           => true,
+			'show_in_rest'      => [ 'schema' => [ 'type' => 'boolean' ] ],
+			'description'       => 'AI-powered lead insights',
+		]
+	);
 }
 function handl_get_zapier_log() {
 	function handl_recursive_json_decode($data, $depth = 0, $max_depth = 10) {

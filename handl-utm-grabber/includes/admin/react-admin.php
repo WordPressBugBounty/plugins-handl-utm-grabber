@@ -120,8 +120,13 @@ class Handl_React_Pages_Manager
             'utm_page_handl_analytics',
             'utm_page_handl-onboarding',
             'admin_page_handl-onboarding',
+            'index.php', // Lead Insights widget app.
         ];
         if (! in_array($hook_suffix, $allowed_hooks, true)) {
+            return;
+        }
+        // Dashboard-only bundle load is for the insights widget, which is admin-only.
+        if ('index.php' === $hook_suffix && ! current_user_can('manage_options')) {
             return;
         }
 
@@ -172,12 +177,24 @@ class Handl_React_Pages_Manager
             $script_asset['version']
         );
         $current_user = wp_get_current_user();
+        $first_name   = '';
+        if ( $current_user->exists() ) {
+            if ( ! empty( $current_user->first_name ) ) {
+                $first_name = $current_user->first_name;
+            } elseif (
+                ! empty( $current_user->display_name )
+                && strcasecmp( $current_user->display_name, $current_user->user_login ) !== 0
+            ) {
+                // Fall back to the display name, but not when it's just the username (e.g. "admin", "root").
+                $first_name = strtok( $current_user->display_name, ' ' );
+            }
+        }
         $wp_api_props = apply_filters( 'handl_react_admin_localize', [
             'ajax_url'     => admin_url('admin-ajax.php'),
             'nonce'        => array(),
             'current_user' => array(
-                'email'      => $current_user ? $current_user->user_email : '',
-                'first_name' => $current_user ? ( get_user_meta( $current_user->ID, 'first_name', true ) ?: '' ) : '',
+                'email'      => $current_user->exists() ? $current_user->user_email : '',
+                'first_name' => $first_name,
             ),
         ] );
         wp_localize_script('handl-react-main-script', 'wpAPIProps', $wp_api_props);

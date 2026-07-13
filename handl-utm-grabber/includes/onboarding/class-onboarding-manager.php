@@ -58,11 +58,23 @@ class Handl_Onboarding_Manager {
 		}
 	}
 
-	public function register_test_listeners() {
-		foreach ( $this->onboarding_integrations as $onboarding ) {
-			$onboarding->register_test_listener( array( $this, 'maybe_capture' ) );
-		}
+	public function register_capture_listener() {
+		add_action( 'handl_utm_submission', array( $this, 'maybe_capture_event' ) );
 		add_action( 'wp_footer', array( $this, 'maybe_render_test_banner' ) );
+	}
+
+	/**
+	 * Submission-event consumer: adapts the shared event to the live-test matcher.
+	 *
+	 * @param array $event array{ form_id:string, posted:array, ... }
+	 */
+	public function maybe_capture_event( $event ) {
+		if ( ! is_array( $event ) ) {
+			return;
+		}
+		$form_id = isset( $event['form_id'] ) ? (string) $event['form_id'] : '';
+		$posted  = isset( $event['posted'] ) && is_array( $event['posted'] ) ? $event['posted'] : array();
+		$this->maybe_capture( $form_id, $posted );
 	}
 
 	public function maybe_render_test_banner() {

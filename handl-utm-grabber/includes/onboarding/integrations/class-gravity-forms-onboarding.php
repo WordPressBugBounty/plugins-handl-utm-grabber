@@ -48,26 +48,4 @@ class Gravity_Forms_Onboarding extends Handl_Integration_Onboarding {
 
 		return array_values( array_unique( $urls ) );
 	}
-
-	public function register_test_listener( callable $on_match ) {
-		add_action( 'gform_after_submission', function ( $entry, $form ) use ( $on_match ) {
-			$tracked = handl_lite_tracking_params();
-			$posted  = array();
-			foreach ( $tracked as $param ) {
-				foreach ( $form['fields'] as $field ) {
-					$input_name = is_object( $field ) ? ( isset( $field->inputName ) ? $field->inputName : '' ) : ( isset( $field['inputName'] ) ? $field['inputName'] : '' );
-					$field_id   = is_object( $field ) ? ( isset( $field->id ) ? $field->id : null ) : ( isset( $field['id'] ) ? $field['id'] : null );
-					if ( $input_name === $param && $field_id !== null ) {
-						$val = \rgar( $entry, (string) $field_id );
-						if ( $val !== '' ) {
-							$posted[ $param ] = (string) $val;
-						}
-						break;
-					}
-				}
-			}
-
-			$on_match( (string) $form['id'], $posted );
-		}, 10, 2 );
-	}
 }

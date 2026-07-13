@@ -48,35 +48,4 @@ class Ninja_Forms_Onboarding extends Handl_Integration_Onboarding {
 
 		return array_values( array_unique( $urls ) );
 	}
-
-	public function register_test_listener( callable $on_match ) {
-		add_action( 'ninja_forms_after_submission', function ( $form_data ) use ( $on_match ) {
-			$form_id = '';
-			if ( isset( $form_data['form_id'] ) ) {
-				$form_id = (string) $form_data['form_id'];
-			} elseif ( isset( $form_data['id'] ) ) {
-				$form_id = (string) $form_data['id'];
-			}
-
-			$tracked = handl_lite_tracking_params();
-			$posted  = array();
-			if ( ! empty( $form_data['fields'] ) && is_array( $form_data['fields'] ) ) {
-				foreach ( $form_data['fields'] as $field ) {
-					$key = isset( $field['key'] ) ? (string) $field['key'] : '';
-					if ( $key === '' || ! in_array( $key, $tracked, true ) ) {
-						continue;
-					}
-					$val = isset( $field['value'] ) ? $field['value'] : '';
-					if ( is_array( $val ) ) {
-						$val = reset( $val );
-					}
-					if ( $val !== '' ) {
-						$posted[ $key ] = (string) $val;
-					}
-				}
-			}
-
-			$on_match( $form_id, $posted );
-		}, 10, 1 );
-	}
 }

@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.6
+ * Version: 2.9.7
  * Author URI: https://www.utmgrabber.com/
 */
 
@@ -775,6 +775,12 @@ if (is_admin()) {
 }
 require_once "includes/admin/handl-options.php";
 
+require_once "includes/submissions/class-submissions-manager.php";
+( new \Handl\UtmrabberFree\Submissions\Handl_Submissions_Manager() )->boot();
+
+require_once "includes/insights/class-insights-manager.php";
+( new \Handl\UtmrabberFree\Insights\Handl_Insights_Manager() )->register();
+
 require_once "includes/onboarding/class-onboarding-manager.php";
 
 $handl_integrations_manager = null;
@@ -790,7 +796,7 @@ require_once "includes/health/class-site-health-manager.php";
 ( new \Handl\UtmrabberFree\Health\Handl_Site_Health_Manager() )->register();
 
 $handl_onboarding_manager = new Handl_Onboarding_Manager( $handl_integrations_manager );
-$handl_onboarding_manager->register_test_listeners();
+$handl_onboarding_manager->register_capture_listener();
 
 if ( is_admin() ) {
     $handl_onboarding_manager->register_admin_hooks();
@@ -817,6 +823,3 @@ function handl_utm_grabber_maybe_redirect() {
     exit;
 }
 add_action( 'admin_init', 'handl_utm_grabber_maybe_redirect' );
-
-
-

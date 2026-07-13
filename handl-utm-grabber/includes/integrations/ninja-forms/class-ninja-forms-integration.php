@@ -20,9 +20,34 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * resolves the merge tag server-side at form render.
  *
  *
- * Identification: Add skips existing field `key`; Remove deletes fields with `default` matching "{handl:{param}}" for our tracked params only.
+ * Identification: `param_for_field()` is the single source of truth (exact
+ * `key`, or legacy `default` of "{handl:{param}}"); status detection and the
+ * submission listener both use it. Add skips existing field `key`; Remove
+ * deletes fields with a managed `default` only.
  */
 class Ninja_Forms_Integration extends Handl_Integration {
+
+	/**
+	 * Resolve which tracked param a Ninja Forms field feeds.
+	 *
+	 * Primary: field key === param (our Add flow). Legacy (docs-guide setup):
+	 * NF auto-generated key, `default` is the `{handl:param}` merge tag.
+	 *
+	 * @param string $key     Field `key` setting.
+	 * @param string $default Field `default` setting.
+	 * @return string|null Tracked param name, or null if the field is untracked.
+	 */
+	public static function param_for_field( $key, $default ) {
+		$tracked = handl_lite_tracking_params();
+		if ( in_array( (string) $key, $tracked, true ) ) {
+			return (string) $key;
+		}
+		if ( preg_match( '/^\{handl:([a-z_]+)\}$/', (string) $default, $m )
+			 && in_array( $m[1], $tracked, true ) ) {
+			return $m[1];
+		}
+		return null;
+	}
 
 	public function get_slug() {
 		return 'ninja-forms';
@@ -97,25 +122,16 @@ class Ninja_Forms_Integration extends Handl_Integration {
 			return null;
 		}
 
-		$tracked = array_map( 'strval', $this->get_tracked_params() );
 		$present = array();
 
 		foreach ( $fields as $field ) {
-			$key     = (string) $field->get_setting( 'key' );
-			$default = (string) $field->get_setting( 'default' );
-
-			foreach ( $tracked as $param ) {
-				if ( in_array( $param, $present, true ) ) {
-					continue;
-				}
-				// Primary: key === param. Legacy: default is `{handl:param}`.
-				if ( $key === $param || $default === '{handl:' . $param . '}' ) {
-					$present[] = $param;
-				}
+			$param = self::param_for_field( $field->get_setting( 'key' ), $field->get_setting( 'default' ) );
+			if ( $param !== null && ! in_array( $param, $present, true ) ) {
+				$present[] = $param;
 			}
 		}
 
-		return array_values( array_unique( $present ) );
+		return $present;
 	}
 
 	/**

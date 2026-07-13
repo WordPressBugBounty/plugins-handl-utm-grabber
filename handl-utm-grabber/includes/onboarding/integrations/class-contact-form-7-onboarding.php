@@ -59,31 +59,4 @@ class Contact_Form_7_Onboarding extends Handl_Integration_Onboarding {
 
 		return array_values( array_unique( $urls ) );
 	}
-
-	public function register_test_listener( callable $on_match ) {
-		add_action( 'wpcf7_before_send_mail', function ( $contact_form ) use ( $on_match ) {
-			if ( ! class_exists( '\WPCF7_Submission' ) ) {
-				return;
-			}
-			$submission = \WPCF7_Submission::get_instance();
-			if ( ! $submission ) {
-				return;
-			}
-
-			$data   = $submission->get_posted_data();
-			$posted = array();
-			foreach ( handl_lite_tracking_params() as $param ) {
-				$key = $param . '_cf7';
-				if ( ! isset( $data[ $key ] ) ) {
-					continue;
-				}
-				$val = is_array( $data[ $key ] ) ? reset( $data[ $key ] ) : $data[ $key ];
-				if ( $val !== '' ) {
-					$posted[ $param ] = (string) $val;
-				}
-			}
-
-			$on_match( (string) $contact_form->id(), $posted );
-		}, 10, 1 );
-	}
 }
