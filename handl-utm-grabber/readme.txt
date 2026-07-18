@@ -3,7 +3,7 @@ Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
 Tested up to: 7.0
-Stable tag: 2.9.7
+Stable tag: 2.9.8
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -127,19 +127,31 @@ Yes. UTM Grabber is built with a first-party data approach and supports GDPR-ori
 
 == Screenshots ==
 
-1. It should look like this after install.
-1. Gravity Form Integration.
-1. Salesforce Integration.
-1. Append UTM variables to all URLs automatically.
-1. Contact Form 7 Integration
-1. Elementor Integration
-1. Ninja Forms Integration
-1. Ultimate Member Integration
-1. WooCommerce to Webhook/Postback/IPN Integration
-1. WPForms Integration
-1. Zapier Integration
+1. Marketing Attribution Dashboard — overview of tracked leads, sources, and campaigns
+2. Lead Records — filter and export submissions with full attribution context
+3. Campaign Insights — source performance and recommended next steps
+4. Custom Fields — map core UTM and conversion-context attribution fields
+5. Settings — first-party tracking controls and quality checks
+6. AI-Powered Lead Insights — dashboard widget and form entry insights for Contact Form 7, Gravity Forms, Ninja Forms & Elementor
+7. HandL UTM Grabber installed and active in the WordPress Plugins screen
+8. Gravity Forms — hidden field dynamically populated with utm_campaign
+9. Salesforce — map Source__c to the [utm_source] shortcode
+10. Append UTM variables to all links automatically
+11. Contact Form 7 — hidden fields for UTMs and gclid
+12. Elementor — add a hidden UTM campaign form field
+13. Ninja Forms — HandL UTM Grabber merge tags
+14. Ultimate Member — inject UTM parameters into email templates
+15. WooCommerce Postback / IPN — send order attribution to a webhook
+16. WPForms — map a hidden field default value to utm_campaign
+17. Zapier — configure the webhook URL in HandL Options
 
 == Changelog ==
+= 2.9.8 =
+* New: Tracking Doctor — one-click tracking audit with rule-based health checks (forms, WooCommerce, consent, caching, cookies)
+* New: Optional AI-powered reviews per Tracking Doctor check
+* Fix: WooCommerce order attribution capture for HPOS and blocks checkout
+* Fix: Improved consent plugin detection
+
 = 2.9.7 =
 * AI-powered lead insights for Contact Form 7, Ninja Form, Elementor and Gravity Form
 

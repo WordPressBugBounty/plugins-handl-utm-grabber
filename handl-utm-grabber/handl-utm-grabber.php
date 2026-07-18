@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.7
+ * Version: 2.9.8
  * Author URI: https://www.utmgrabber.com/
 */
 
@@ -13,6 +13,7 @@ use Handl\UtmrabberFree\Admin\Handl_React_Pages_Manager;
 use Handl\UtmrabberFree\Admin\Handl_Promos_Manager;
 use Handl\UtmrabberFree\Integrations\Handl_Integrations_Manager;
 use Handl\UtmrabberFree\Onboarding\Handl_Onboarding_Manager;
+use Handl\UtmrabberFree\TrackingDoctor\Handl_Tracking_Doctor_Manager;
 
 define( 'HANDL_UTM_V3_LINK', 'https://utmgrabber.com' );
 $handl_free_header = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
@@ -453,15 +454,6 @@ function sanitizeQueryArgs($cookie_str){
 	return $cookie_str;
 }
 
-function HandLUTMGrabberWooCommerceUpdateOrderMeta( $order_id ) {
-	$fields = array('utm_source','utm_medium','utm_term', 'utm_content', 'utm_campaign', 'gclid', 'handl_original_ref', 'handl_landing_page', 'handl_ip', 'handl_ref', 'handl_url');
-	foreach ($fields as $field){
-		if (isset($_COOKIE[$field]) && $_COOKIE[$field] != '')
-		update_post_meta( $order_id, $field, esc_attr($_COOKIE[$field]));
-	}
-}
-add_action('woocommerce_checkout_update_order_meta', 'HandLUTMGrabberWooCommerceUpdateOrderMeta');
-
 //ConvertPlug UTM Support
 //function handl_utm_grabber_setting($a){
 //	return do_shortcode($a);
@@ -800,6 +792,9 @@ $handl_onboarding_manager->register_capture_listener();
 
 if ( is_admin() ) {
     $handl_onboarding_manager->register_admin_hooks();
+
+    require_once "includes/tracking-doctor/class-tracking-doctor-manager.php";
+    ( new Handl_Tracking_Doctor_Manager( $handl_integrations_manager ) )->register();
 }
 
 function handl_utm_grabber_activate() {
