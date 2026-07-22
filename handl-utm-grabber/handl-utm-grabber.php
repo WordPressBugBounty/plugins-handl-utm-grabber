@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.8
+ * Version: 2.9.9
  * Author URI: https://www.utmgrabber.com/
 */
 

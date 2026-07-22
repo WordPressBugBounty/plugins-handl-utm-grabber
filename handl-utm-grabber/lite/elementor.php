@@ -16,7 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) exit;
     if (in_array($field, $lite_params) && isset($_COOKIE[$field]) && $_COOKIE[$field] != ''){
         $item['field_value'] = $_COOKIE[$field];
         if ($new_version)
-            $form->add_render_attribute( 'input' . $item_index, 'value', $item['field_value'] );
+            // Overwrite: a Default Value set on the field already adds a `value` render attribute, and Elementor merges repeated attributes
+            $form->add_render_attribute( 'input' . $item_index, 'value', $item['field_value'], true );
     }
     return $item;
 }, 10, 3 );

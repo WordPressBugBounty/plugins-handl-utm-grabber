@@ -3,7 +3,7 @@ Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
 Tested up to: 7.0
-Stable tag: 2.9.8
+Stable tag: 2.9.9
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -146,6 +146,10 @@ Yes. UTM Grabber is built with a first-party data approach and supports GDPR-ori
 17. Zapier — configure the webhook URL in HandL Options
 
 == Changelog ==
+= 2.9.9 =
+* New: Enhanced client-side tracking for Elementor Pro forms for robust tracking on cached pages and popups
+* Fix: Prevent duplicated values on Elementor fields
+
 = 2.9.8 =
 * New: Tracking Doctor — one-click tracking audit with rule-based health checks (forms, WooCommerce, consent, caching, cookies)
 * New: Optional AI-powered reviews per Tracking Doctor check
