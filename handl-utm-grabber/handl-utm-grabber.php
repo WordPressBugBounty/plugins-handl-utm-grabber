@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.9
+ * Version: 2.9.10
  * Author URI: https://www.utmgrabber.com/
 */
 
@@ -182,6 +182,9 @@ function handl_premium_link_new_tab() {
         jQuery(document).ready(function($) {
             // Find the Premium menu link and add ID, then modify it to open in new tab
             $('a[href*="handl_go_premium"]').attr('id', 'handl-premium-link').attr('target', '_blank').attr('href', '<?php echo esc_url( handl_v3_generate_links('HandL_Go_Premium_Link','','wordpress_menu_link') ); ?>');
+            // The Setup submenu sits first, so WP points the top-level UTM link
+            // at the wizard; send the parent click to the main app instead.
+            $('#adminmenu > li > a[href$="page=handl-onboarding"]').attr('href', 'admin.php?page=handl-utm-grabber.php');
         });
     </script>
     <?php
@@ -474,88 +477,6 @@ function handl_utm_grabber_merge_tags(){
 }
 add_action( 'ninja_forms_loaded', 'handl_utm_grabber_merge_tags' );
 
-if ( ! function_exists( 'handl_admin_notice__success' ) ) {
-    function handl_admin_notice__success() {
-        global $pagenow;
-        if ($pagenow == 'plugins.php'){
-            $field = 'check_v2717_doc';
-            if (!get_option($field)) {
-                ?>
-                <style>
-                    .handl-notice-dismiss{
-                        display: block;
-                    }
-
-                    .handl-notice-title{
-                        font-size: 14px;
-                        font-weight: 600;
-                    }
-
-                    .handl-notice-list li{
-                        float: left;
-                        margin-right: 20px;
-                    }
-
-                    .handl-notice-list li a{
-                        color: #ed494d;
-                        text-decoration: none;
-                    }
-
-                    .handl-notice-list:after{
-                        clear: both;
-                        content: "";
-                        display: block;
-                    }
-
-                    .handl-notice-dismiss .new-plugin{
-                        font-size: 20px;
-                        line-height: 1;
-                    }
-
-                    .handl-notice-dismiss .new-plugin a{
-                        text-decoration: none;
-                    }
-                </style>
-                <div class="notice notice-success handl-notice-dismiss is-dismissible">
-                    <p class='handl-notice-title'>Enjoy using our community version? You will love HandL UTM Grabber V3 even more  </p>
-                    <ul>
-                        <li>📈 Are you using <b>Google Ads?</b> <a href="https://docs.utmgrabber.com/books/103-internal-apps/page/handl-gclid-reporter?utm_campaign=HandLGCLIDReporter&utm_source=WordPress_FREE&utm_medium=wordpress_settings_page" target="_blank">Click here</a> to generate your <b>GCLID</b> report for <b>FREE (temporarily)</b></li>
-
-<!--                        <li>🎁 💰 <b>Black Friday: Don't miss the biggest sale of the year</b>. <a target="_blank" href="--><?php //print handl_v3_generate_links("BlackFriday2020", "", "wordpress_notification");?><!--">Click here</a> to get <b>50% off</b>. Make your Black Friday memorable with this limited-time, festive deal.</li>-->
-<!--                        <li> <p style="font-size:1.25em">💵 <b>BLACK FRIDAY SALES FOR WP COMMUNITY:</b> $20 OFF on every plans. <a target="_blank" href="--><?php //print handl_v3_generate_links('20OFFPromo', '', 'dash-widget'); ?><!--">Click here</a> to score the deal. Limited availability. Act now!</p></li>-->
-<!--                        <li> <p style="font-size:1.25em">🚨🚨🚨 <b>LIMITED SEAT AVAILABLE:</b> We are <b>doubling the number of licenses</b> for any plan exclusive to the WP community. <a target="_blank" href="--><?php //print handl_v3_generate_links('4WPCommunity', '', 'dash-widget'); ?><!--">Click here</a> to score the deal. Act now!</p></li>-->
-<!--                        <li> ℹ️ Get your <a href="https://handldigital.com/free-utm-audit/?utm_campaign=UTMAudit&utm_source=WordPress_FREE&utm_medium=dash-widget" target="_blank">FREE marketing/UTM audit</a> here. 100% human reply. No credit card required.</li>-->
-                    </ul>
-
-                </div>
-                <script>
-                    jQuery(document).on( 'click', '.handl-notice-dismiss>.notice-dismiss', function() {
-
-                        jQuery.post(
-                            ajaxurl,
-                            {
-                                'action': 'handl_notice_dismiss',
-                                'field':   '<?php echo esc_js( $field ); ?>'
-                            }
-                        );
-
-                    })
-                </script>
-                <?php
-            }
-        }
-    }
-}
-//add_action( 'admin_notices', 'handl_admin_notice__success' );
-
-if ( ! function_exists( 'handl_notice_dismiss' ) ) {
-    function handl_notice_dismiss() {
-        add_option( 'check_v2717_doc', '1', '', 'yes' ) or update_option( 'check_v2717_doc', '1' );
-        die();
-    }
-}
-add_action( 'wp_ajax_handl_notice_dismiss', 'handl_notice_dismiss' );
-
 function handl_grab_related_plugins(){
     $plugins = get_plugins();
 //    print_r($plugins);
@@ -760,6 +681,7 @@ add_action('admin_enqueue_scripts', function() {
     }
 });
 if (is_admin()) {
+    require_once "includes/notices/class-notice-manager.php";
     require_once "includes/admin/react-admin.php";
     require_once "includes/admin/promos.php";
     new Handl_React_Pages_Manager();
@@ -779,13 +701,13 @@ $handl_integrations_manager = null;
 if ( is_admin() ) {
     require_once "includes/integrations/class-integrations-manager.php";
     $handl_integrations_manager = new Handl_Integrations_Manager();
-
-    require_once "includes/onboarding/class-setup-notice.php";
-    ( new \Handl\UtmrabberFree\Onboarding\Handl_Setup_Notice( $handl_integrations_manager ) )->register();
 }
 
 require_once "includes/health/class-site-health-manager.php";
 ( new \Handl\UtmrabberFree\Health\Handl_Site_Health_Manager() )->register();
+
+require_once "includes/weekly-snapshot/class-weekly-snapshot-manager.php";
+( new \Handl\UtmrabberFree\WeeklySnapshot\Handl_Weekly_Snapshot_Manager() )->register();
 
 $handl_onboarding_manager = new Handl_Onboarding_Manager( $handl_integrations_manager );
 $handl_onboarding_manager->register_capture_listener();
@@ -803,6 +725,11 @@ function handl_utm_grabber_activate() {
     }
 }
 register_activation_hook( __FILE__, 'handl_utm_grabber_activate' );
+
+function handl_utm_grabber_deactivate() {
+    wp_clear_scheduled_hook( \Handl\UtmrabberFree\WeeklySnapshot\Handl_Snapshot_Cron::HOOK );
+}
+register_deactivation_hook( __FILE__, 'handl_utm_grabber_deactivate' );
 
 function handl_utm_grabber_maybe_redirect() {
     if ( ! get_option( 'handl_onboarding_redirect', false ) ) {

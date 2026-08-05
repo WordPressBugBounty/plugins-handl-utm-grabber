@@ -24,14 +24,37 @@ class Handl_Promos_Manager
         add_action( 'wp_ajax_handl_get_promos', [ $this, 'ajax_get_promos' ] );
         add_action( 'wp_ajax_handl_dismiss_promo', [ $this, 'ajax_dismiss_promo' ] );
         add_action( 'admin_init', [ $this, 'maybe_set_install_date' ] );
-        
-        add_action( 'admin_notices', [ $this, 'render_admin_notice' ] );
+
+        $this->register_notice_bridge();
         add_action( 'wp_dashboard_setup', [ $this, 'register_dashboard_widget' ] );
         add_action( 'admin_bar_menu', [ $this, 'render_admin_bar_item' ], 100 );
         add_action( 'admin_head', [ $this, 'render_admin_styles' ] );
         add_action( 'admin_footer', [ $this, 'render_dismiss_script' ] );
         
         add_filter( 'handl_promo_menu_badge', [ $this, 'get_sidebar_badge_html' ] );
+    }
+
+    /**
+     * Render through Handl_Notice_Manager's single slot instead of a raw
+     * admin_notices hook, so a remote promo can never stack on top of the
+     * plugin's own notices
+     */
+    private function register_notice_bridge()
+    {
+        if ( ! class_exists( '\Handl\UtmrabberFree\Notices\Handl_Notice_Manager' ) ) {
+            return;
+        }
+        \Handl\UtmrabberFree\Notices\Handl_Notice_Manager::get_instance()->register( 'promo-bridge', [
+            'priority'        => 90,
+            'track'           => false,
+            'show_when'       => [ $this, 'has_admin_notice_promo' ],
+            'render_callback' => [ $this, 'render_admin_notice' ],
+        ] );
+    }
+
+    public function has_admin_notice_promo()
+    {
+        return $this->has_active_promo_for_location( 'admin_notice' );
     }
 
     public function maybe_set_install_date()

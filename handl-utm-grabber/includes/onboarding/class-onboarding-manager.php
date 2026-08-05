@@ -5,6 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 use Handl\UtmrabberFree\Integrations\Handl_Integrations_Manager;
 
+require_once __DIR__ . '/class-onboarding-notices.php';
 require_once __DIR__ . '/class-integration-onboarding.php';
 require_once __DIR__ . '/integrations/class-gravity-forms-onboarding.php';
 require_once __DIR__ . '/integrations/class-contact-form-7-onboarding.php';
@@ -35,6 +36,10 @@ class Handl_Onboarding_Manager {
 		$this->load_onboarding_integrations();
 	}
 	public function register_admin_hooks() {
+		if ( class_exists( '\Handl\UtmrabberFree\Notices\Handl_Notice_Manager' ) ) {
+			( new Handl_Onboarding_Notices( $this->integrations_manager ) )->register();
+		}
+
 		add_filter( 'handl_react_admin_localize', array( $this, 'add_nonce_to_localize' ) );
 
 		add_action( 'wp_ajax_handl_onboarding_state',       array( $this, 'ajax_state' ) );
@@ -43,7 +48,6 @@ class Handl_Onboarding_Manager {
 		add_action( 'wp_ajax_handl_onboarding_test_status', array( $this, 'ajax_test_status' ) );
 		add_action( 'wp_ajax_handl_onboarding_test_cancel', array( $this, 'ajax_test_cancel' ) );
 		add_action( 'wp_ajax_handl_onboarding_complete',    array( $this, 'ajax_complete' ) );
-		add_action( 'wp_ajax_handl_onboarding_signup',      array( $this, 'ajax_signup' ) );
 	}
 
 	private function load_onboarding_integrations() {
@@ -111,6 +115,10 @@ class Handl_Onboarding_Manager {
 			$data['nonce'] = array();
 		}
 		$data['nonce']['onboarding_nonce'] = wp_create_nonce( self::NONCE_ACTION );
+
+		if ( function_exists( 'handl_v3_generate_links' ) ) {
+			$data['premium_upsell_url'] = handl_v3_generate_links( 'HandL_Onboarding_Upsell', '', 'onboarding_final_step' );
+		}
 		return $data;
 	}
 
@@ -389,90 +397,69 @@ class Handl_Onboarding_Manager {
 			}
 		}
 
-		// test_skipped is INFERRED: true when no live test ever reached "captured".
-		// There is no explicit "skip" event today; revisit if we add real tracking.
-		$has_captured = false;
-		$state        = $this->get_active();
-		foreach ( $state['tests'] as $test ) {
-			if ( isset( $test['status'] ) && $test['status'] === 'captured' ) {
-				$has_captured = true;
-				break;
-			}
-		}
-
 		$host = wp_parse_url( home_url(), PHP_URL_HOST );
 
-		return array(
+		$context = array(
 			'domain'              => is_string( $host ) ? $host : '',
 			'plugin_version'      => defined( 'HANDL_UTM_GRABBER_FREE_VERSION' ) ? HANDL_UTM_GRABBER_FREE_VERSION : '',
 			'form_plugins'        => array_values( $form_plugins ),
 			'setup_completed_for' => array_values( $setup_completed_for ),
-			'test_skipped'        => ! $has_captured,
 		);
+
+		// test_skipped is a wizard-time inference (no live test reached
+		// "captured" in the active transient). Outside onboarding the
+		// transient is long gone and the flag would always read true, so
+		// the key is omitted entirely once the wizard has completed.
+		if ( ! get_option( self::COMPLETED_OPTION, false ) ) {
+			$has_captured = false;
+			$state        = $this->get_active();
+			foreach ( $state['tests'] as $test ) {
+				if ( isset( $test['status'] ) && $test['status'] === 'captured' ) {
+					$has_captured = true;
+					break;
+				}
+			}
+			$context['test_skipped'] = ! $has_captured;
+		}
+
+		return $context;
 	}
 
-	/** Proxy newsletter signup to api.utmgrabber.com so the nonce/auth pattern stays consistent. */
-	public function ajax_signup() {
-		if ( ! $this->authorize() ) {
+	/**
+	 * Fire-and-forget backend enrollment for every enable path: the
+	 * silent-register signup plus the site-metadata sync. Responses are
+	 * deliberately not read; an opt-in must never wait on the ~10s signup
+	 * roundtrip or fail because of it.
+	 */
+	public static function enroll( $email ) {
+		if ( ! is_email( $email ) ) {
 			return;
 		}
 
-		$email      = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '';
-		$given_name = isset( $_POST['given_name'] ) ? sanitize_text_field( wp_unslash( $_POST['given_name'] ) ) : 'there';
+		// Reuse the boot-time instance: constructing another re-adds its hooks.
+		$integrations = ( isset( $GLOBALS['handl_integrations_manager'] )
+			&& $GLOBALS['handl_integrations_manager'] instanceof Handl_Integrations_Manager )
+			? $GLOBALS['handl_integrations_manager']
+			: null;
+		$manager = new self( $integrations );
 
-		if ( $email === '' || ! is_email( $email ) ) {
-			wp_send_json_error( array(
-				'code'    => 'INVALID_BODY',
-				'message' => 'A valid email address is required.',
-			) );
-			return;
-		}
-
-		$payload = array(
-			'email'         => $email,
-			'signup_source' => self::SIGNUP_SOURCE,
-		);
-		if ( $given_name !== '' ) {
-			$payload['given_name'] = $given_name;
-		}
-
-		$res = wp_remote_post( self::SIGNUP_ENDPOINT, array(
-			'timeout' => 10,
-			'headers' => array( 'Content-Type' => 'application/json' ),
-			'body'    => wp_json_encode( $payload ),
-		) );
-
-		if ( is_wp_error( $res ) ) {
-			wp_send_json_error( array(
-				'code'    => 'NETWORK_ERROR',
-				'message' => $res->get_error_message(),
-			) );
-			return;
-		}
-
-		$status = (int) wp_remote_retrieve_response_code( $res );
-		$body   = json_decode( wp_remote_retrieve_body( $res ), true );
-
-		if ( $status >= 200 && $status < 300 && is_array( $body ) && isset( $body['userId'] ) ) {
-			// Non block
-			$meta = array_merge( array( 'email' => $email ), $this->metadata_context() );
-			wp_remote_post( self::METADATA_ENDPOINT, array(
-				'timeout'  => 8,
+		$post = function ( $url, array $body ) {
+			wp_remote_post( $url, array(
+				'timeout'  => 2,
 				'blocking' => false,
 				'headers'  => array( 'Content-Type' => 'application/json' ),
-				'body'     => wp_json_encode( $meta ),
+				'body'     => wp_json_encode( $body ),
 			) );
+		};
 
-			wp_send_json_success( array(
-				'userId' => (string) $body['userId'],
-				'isNew'  => ! empty( $body['isNew'] ),
-			) );
-			return;
-		}
-
-		wp_send_json_error( array(
-			'code'    => is_array( $body ) && isset( $body['code'] ) ? (string) $body['code'] : 'UPSTREAM_ERROR',
-			'message' => is_array( $body ) && isset( $body['message'] ) ? (string) $body['message'] : 'Signup failed.',
+		$post( self::SIGNUP_ENDPOINT, array(
+			'email'         => $email,
+			'signup_source' => self::SIGNUP_SOURCE,
+		) );
+		$post( self::METADATA_ENDPOINT, array_merge(
+			array( 'email' => $email ),
+			$manager->metadata_context()
 		) );
 	}
+
 }
