@@ -57,6 +57,21 @@ function handl_register_legacy_options() {
 			'description'       => 'AI-powered lead insights',
 		]
 	);
+	register_setting(
+		'handl-utm-grabber-settings-group-new',
+		'handl_gdpr_plugins',
+		[
+			'type'              => 'object',
+			'default'           => [],
+			'show_in_rest'      => [
+				'schema' => [
+					'type'                 => 'object',
+					'additionalProperties' => [ 'type' => 'integer' ],
+				],
+			],
+			'description'       => 'Consent plugins allowed to intercept HandL attribution capture',
+		]
+	);
 }
 function handl_get_zapier_log() {
 	function handl_recursive_json_decode($data, $depth = 0, $max_depth = 10) {

@@ -1,9 +1,37 @@
 var qvars = getUrlVars()
+var handlConsentGranted = typeof handl_utm_cookie_duration === 'undefined' || handl_utm_cookie_duration[1] === '1'
 
 jQuery(function($) {
-    RunFieldFiller()
+    if (handlConsentGranted) {
+        RunHandL()
+    }
+});
 
-    $('.utm-out').each(function(){
+function RunHandL(){
+    handlConsentGranted = true
+    setHandLParams()
+    RunFieldFiller()
+    HandLAppendTrackedLinks()
+}
+
+// IP stays server-side.
+function setHandLParams(){
+    var cookieOptions = { expires: parseInt(handl_utm_cookie_duration[0]) }
+
+    Cookies.set('handl_url', document.location.href, cookieOptions)
+    Cookies.set('handl_ref', document.referrer, cookieOptions)
+
+    if (Cookies.get('handl_landing_page') === undefined) {
+        Cookies.set('handl_landing_page', document.location.href, cookieOptions)
+    }
+
+    if (Cookies.get('handl_original_ref') === undefined) {
+        Cookies.set('handl_original_ref', document.referrer, cookieOptions)
+    }
+}
+
+function HandLAppendTrackedLinks(){
+    jQuery('.utm-out').each(function(){
         // Only process if this is an anchor tag with href
         if (this.tagName.toLowerCase() !== 'a' || !this.href) {
             return;
@@ -27,18 +55,31 @@ jQuery(function($) {
         }
 
         // Merge sanitized objects
-        var merged = $.extend({}, sanitizedHandlUtm, sanitizedParams);
+        var merged = jQuery.extend({}, sanitizedHandlUtm, sanitizedParams);
 
         // Reset href and append sanitized parameters
         this.href = this.href.split('?')[0]; // Keep base URL only
-        if(!$.isEmptyObject(merged)) {
-            this.href += "?" + $.param(merged);
+        if(!jQuery.isEmptyObject(merged)) {
+            this.href += "?" + jQuery.param(merged);
         }
     });
+}
+
+// WP Consent API
+document.addEventListener('wp_listen_for_consent_change', function (e) {
+    var changedConsentCategory = e.detail;
+    for (var key in changedConsentCategory) {
+        if (changedConsentCategory.hasOwnProperty(key)) {
+            if (key === 'marketing' && changedConsentCategory[key] === 'allow') {
+                console.log('WP Consent API: Marketing consent granted, running HandL');
+                RunHandL();
+            }
+        }
+    }
 });
 
 function RunFieldFiller(){
-    jQuery.each([ 'utm_source','utm_medium','utm_term', 'utm_content', 'utm_campaign', 'gclid', 'handl_landing_page', 'handl_original_ref', 'handl_ip', 'email', 'username' ], function( i,v ) {
+    jQuery.each([ 'utm_source','utm_medium','utm_term', 'utm_content', 'utm_campaign', 'gclid', 'handl_landing_page', 'handl_original_ref', 'handl_ip', 'handl_ref', 'handl_url', 'email', 'username' ], function( i,v ) {
 
         var cookie_field = GetQVars(v,qvars)
 
@@ -49,6 +90,11 @@ function RunFieldFiller(){
 
         if (curval != undefined) {
             curval = decodeURIComponent(curval).replace(/[%]/g,' ')
+
+            if ([ 'utm_source', 'utm_medium', 'utm_term', 'utm_content', 'utm_campaign', 'gclid' ].indexOf(v) !== -1) {
+                handl_utm[v] = curval
+            }
+
             if (v == 'username') {
                 //Maybe this should apply to all... We'll see...
                 curval = curval.replace(/\+/g, ' ')
@@ -103,5 +149,9 @@ function getUrlVars() {
 }
 
 jQuery( document ).on( 'elementor/popup/show' , function () {
-    setTimeout(RunFieldFiller, 1000)
+    setTimeout(function(){
+        if (handlConsentGranted) {
+            RunFieldFiller()
+        }
+    }, 1000)
 } );

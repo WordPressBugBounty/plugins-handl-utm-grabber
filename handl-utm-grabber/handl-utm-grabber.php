@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.10
+ * Version: 2.9.11
  * Author URI: https://www.utmgrabber.com/
 */
 
@@ -32,9 +32,13 @@ add_filter('widget_text', 'do_shortcode');
 add_action('init', 'CaptureUTMs');
 function CaptureUTMs(){
 
-    if ( is_admin() || $GLOBALS['pagenow'] === 'wp-login.php' || defined( 'DOING_CRON' ) ) {
-        return "";
-    }
+	if ( is_admin() || $GLOBALS['pagenow'] === 'wp-login.php' || defined( 'DOING_CRON' ) || ! HandLCookieConsented() ) {
+		$fields = generateUTMFields();
+		foreach ( $fields as $field ) {
+			HandlCreateShortcode($field, '');
+		}
+		return "";
+	}
 
 	if (!isset($_COOKIE['handl_original_ref']))
 		$_COOKIE['handl_original_ref'] = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
@@ -52,7 +56,7 @@ function CaptureUTMs(){
 	if (isset($_SERVER["SERVER_NAME"]) && isset($_SERVER["REQUEST_URI"]))
 	    $_COOKIE['handl_url'] =  ( isset($_SERVER["HTTPS"]) ? 'https://' : 'http://' ) . $_SERVER["SERVER_NAME"] . $_SERVER["REQUEST_URI"];
 
-	$fields = array('utm_source','utm_medium','utm_term', 'utm_content', 'utm_campaign', 'gclid', 'handl_original_ref', 'handl_landing_page', 'handl_ip', 'handl_ref', 'handl_url', 'email', 'username');
+	$fields = generateUTMFields();
 
     $cookie_field = '';
 	foreach ($fields as $id=>$field){
@@ -67,7 +71,7 @@ function CaptureUTMs(){
 
 		$domain = isset($_SERVER["SERVER_NAME"]) ? $_SERVER["SERVER_NAME"] : '';
 		if ( strtolower( substr($domain, 0, 4) ) == 'www.' ) $domain = substr($domain, 4);
-        if ( substr($domain, 0, 1) != '.' && $domain != "localhost" && $domain != "handl-sandbox" ) $domain = '.'.$domain;
+		if ( substr($domain, 0, 1) != '.' && $domain != "localhost" && $domain != "handl-sandbox" ) $domain = '.'.$domain;
 
 		// Secure cookie settings
 		$secure = isset($_SERVER["HTTPS"]); // Only send cookie over HTTPS
@@ -91,21 +95,7 @@ function CaptureUTMs(){
 
 		$_COOKIE[$field] = $cookie_field;
 
-		// SECURITY FIX: Escape output late with esc_html (works for all content types)
-		add_shortcode($field, function() use ($field) {
-			if (!isset($_COOKIE[$field])) {
-				return '';
-			}
-			return esc_html($_COOKIE[$field]);
-		});
-		
-		add_shortcode($field."_i", function($atts,$content) use ($field) {
-			$clean_field = preg_replace("/_i$/", "", $field);
-			if (!isset($_COOKIE[$clean_field])) {
-				return '';
-			}
-			return sprintf($content, esc_html($_COOKIE[$clean_field]));
-		});
+		HandlCreateShortcode($field, $cookie_field);
 
 		//This is for Gravity Forms
 		add_filter( 'gform_field_value_'.$field, function() use ($field) {
@@ -117,10 +107,36 @@ function CaptureUTMs(){
 	}
 }
 
+if ( ! function_exists( 'HandlCreateShortcode' ) ) {
+	function HandlCreateShortcode($field, $cookie_field)
+	{
+		add_shortcode($field, function() use ($cookie_field) {
+			return esc_html($cookie_field);
+		});
+		add_shortcode($field."_i", function($atts, $content) use ($cookie_field) {
+			return sprintf($content, esc_html($cookie_field));
+		});
+	}
+}
+
+if ( ! function_exists( 'generateUTMFields' ) ) {
+	function generateUTMFields()
+	{
+		return array('utm_source','utm_medium','utm_term', 'utm_content', 'utm_campaign', 'gclid', 'handl_original_ref', 'handl_landing_page', 'handl_ip', 'handl_ref', 'handl_url', 'email', 'username');
+	}
+}
+
+function HandLCookieConsented()
+{
+	$good2go = apply_filters('is_ok_to_capture_utms', array('good2go' => 1));
+	return $good2go["good2go"];
+}
+
 function handl_utm_grabber_enqueue(){
-	wp_enqueue_script( 'js.cookie', plugins_url( '/js/js.cookie.js' , __FILE__ ), array( 'jquery' ) );
-	wp_enqueue_script( 'handl-utm-grabber', plugins_url( '/js/handl-utm-grabber.js' , __FILE__ ), array( 'jquery','js.cookie' ) );
+	wp_enqueue_script( 'js.cookie', plugins_url( '/js/js.cookie.js' , __FILE__ ), array( 'jquery' ), '3.0.5' );
+	wp_enqueue_script( 'handl-utm-grabber', plugins_url( '/js/handl-utm-grabber.js' , __FILE__ ), array( 'jquery','js.cookie' ), HANDL_UTM_GRABBER_FREE_VERSION );
 	wp_localize_script( 'handl-utm-grabber', 'handl_utm', HUGGenerateUTMsForURL() );
+	wp_localize_script( 'handl-utm-grabber', 'handl_utm_cookie_duration', array( 30, HandLCookieConsented() ) );
 }
 add_action( 'wp_enqueue_scripts', 'handl_utm_grabber_enqueue' );
 
@@ -433,6 +449,9 @@ function handl_lite_tracking_params() {
 }
 
 function HUGGenerateUTMsForURL(){
+  if ( ! HandLCookieConsented() ) {
+    return array();
+  }
   $fields = handl_utm_variables();
   $utms = array();
   foreach ($fields as $id=>$field){

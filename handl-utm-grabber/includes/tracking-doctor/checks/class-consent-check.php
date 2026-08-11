@@ -4,7 +4,7 @@ namespace Handl\UtmrabberFree\TrackingDoctor;
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
- * Consent-plugin detection; the HandL consent integration itself is premium.
+ * Consent-plugin detection.
  */
 class Consent_Check extends Handl_Doctor_Check {
 
@@ -33,7 +33,7 @@ class Consent_Check extends Handl_Doctor_Check {
 	}
 
 	public function scope_note() {
-		return 'ONLY review cookie-consent plugin compatibility with HandL. Connecting HandL to a consent plugin (so tracking waits for visitor consent) is a premium HandL feature. When a consent plugin is detected, explain the risk — the banner may withhold or block HandL first-party cookies until visitors accept (losing attribution), or data may be captured before consent — and recommend the premium upgrade. Do NOT invent free-plugin settings to change. Do NOT mention form hidden fields, form plugins, or WooCommerce order meta.';
+		return 'ONLY review cookie-consent plugin compatibility with HandL. The free plugin can wait for marketing consent through the WP Consent API integration (Settings > GDPR); direct integrations with individual consent plugins are a premium HandL feature. When a consent plugin is detected, explain the risk: attribution may be lost or captured before consent. If the consent plugin supports the WP Consent API, recommend enabling HandL\'s free WP Consent API integration; otherwise recommend the premium upgrade. Do NOT invent free-plugin settings to change. Do NOT mention form hidden fields, form plugins, or WooCommerce order meta.';
 	}
 
 	public function run() {
@@ -49,6 +49,40 @@ class Consent_Check extends Handl_Doctor_Check {
 			}
 		}
 
+		$wp_consent_api_active  = $this->is_consent_plugin_present( self::CONSENT_PLUGINS['wp_consent_api'] );
+		$wp_consent_api_enabled = function_exists( 'getHandLGDPRPluginStatus' )
+			&& getHandLGDPRPluginStatus( 'wp-consent-api/wp-consent-api.php' );
+		$consent_type_supplied  = function_exists( 'wp_get_consent_type' ) && wp_get_consent_type();
+
+		if ( $wp_consent_api_active && $wp_consent_api_enabled && $consent_type_supplied ) {
+			return $this->build_check(
+				'pass',
+				'WP Consent API protection is enabled. HandL waits for marketing consent before capturing attribution.',
+				array( 'wp_consent_api_enabled' => true )
+			);
+		}
+
+		if ( $wp_consent_api_active && $wp_consent_api_enabled ) {
+			return $this->build_check(
+				'warn',
+				'WP Consent API integration is enabled, but no consent manager is supplying a consent type. HandL is currently tracking normally.',
+				array( 'wp_consent_api_enabled' => true )
+			);
+		}
+
+		if ( $wp_consent_api_active ) {
+			return $this->build_check(
+				'warn',
+				'WP Consent API is active but HandL is not using it yet. Enable the free integration so HandL waits for marketing consent.',
+				array( 'detected' => $detected ),
+				array(
+					'label' => 'Enable WP Consent API',
+					'url'   => admin_url( 'admin.php?page=handl-utm-grabber.php#/gdpr' ),
+					'type'  => 'link',
+				)
+			);
+		}
+
 		if ( empty( $detected ) ) {
 			return $this->build_check(
 				'pass',
@@ -57,6 +91,21 @@ class Consent_Check extends Handl_Doctor_Check {
 		}
 
 		$labels = implode( ', ', wp_list_pluck( $detected, 'label' ) );
+
+		foreach ( $detected as $plugin ) {
+			if ( 'wpconsent' === $plugin['key'] ) {
+				return $this->build_check(
+					'warn',
+					'WPConsent detected. Install and activate WP Consent API, then enable HandL\'s free integration so tracking waits for marketing consent.',
+					array( 'detected' => $detected ),
+					array(
+						'label' => 'Set up consent integration',
+						'url'   => admin_url( 'admin.php?page=handl-utm-grabber.php#/gdpr' ),
+						'type'  => 'link',
+					)
+				);
+			}
+		}
 
 		return $this->build_check(
 			'warn',

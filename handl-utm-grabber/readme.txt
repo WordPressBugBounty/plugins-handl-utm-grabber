@@ -3,7 +3,7 @@ Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
 Tested up to: 7.0
-Stable tag: 2.9.10
+Stable tag: 2.9.11
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -26,6 +26,7 @@ Trusted by over **250,000 WordPress sites**, UTM Grabber is built for teams that
 > * Use shortcodes to inject tracking values into forms and content
 > * Track key context fields like referrer and landing page
 > * Push clean attribution data into major workflows (forms, WooCommerce, CRM automations)
+> * Wait for marketing consent through WP Consent API and compatible consent managers
 > * Includes iOS 14+ friendly tracking support
 
 = Why teams choose UTM Grabber =
@@ -123,7 +124,7 @@ Yes. You can pass data through supported form integrations and automation tools 
 Yes. HandL UTM Grabber V3 includes Facebook CAPI workflows, AI-Powered Insights, and the GCLID Reporter, plus expanded attribution controls for paid media and offline conversion reporting.
 
 = Is UTM Grabber GDPR-friendly? =
-Yes. UTM Grabber is built with a first-party data approach and supports GDPR-oriented tracking workflows. Advanced compliance controls are available in V3.
+Yes. The free plugin can wait for marketing consent through WP Consent API and a compatible consent manager. Advanced consent integrations and compliance controls are available in V3.
 
 == Screenshots ==
 
@@ -146,6 +147,10 @@ Yes. UTM Grabber is built with a first-party data approach and supports GDPR-ori
 17. Zapier — configure the webhook URL in HandL Options
 
 == Changelog ==
+= 2.9.11 =
+* New: WP Consent API integration lets HandL work with compatible consent plugins and wait for marketing consent before capturing attribution
+* Security: Updated the bundled cookie library to address a reported vulnerability and improve security
+
 = 2.9.10 =
 * New: The Weekly Snapshot, an opt-in weekly email digest of your site's own attribution data: conversions, tracked share, channel mix, top campaigns, landing pages, WooCommerce revenue attribution, and the Tracking Doctor's top fixes
 * New: Dashboard widget with this week's lead count and tracked share
