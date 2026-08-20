@@ -6,19 +6,20 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * Contact Form 7 one-click hidden-field injector.
  *
- * Unlike Gravity Forms, CF7 stores each form as a single text blob (`form`
- * property) plus separate mail templates (`mail.body`, `mail_2.body`). We can't
- * mutate a `fields[]` array, so we instead append an idempotent HandL-marked
- * block to those text blobs:
+ * CF7 stores each form as a single text blob plus mail templates, so we append
+ * an idempotent marker-fenced block of `[hidden {param}_cf7 …]` tags.
  *
- *   <!-- HandL UTM start -->
- *   [hidden utm_source_cf7 utm_source_cf7-12 class:utm_source id:utm_source]
- *   ...
- *   <!-- HandL UTM end -->
+ * CATCH — two tag formats exist on real sites and all three paths (detect, add,
+ * remove) must handle both:
  *
+ *   block  `[hidden utm_source_cf7 …]`  tag TYPE `hidden`, NAME `{param}_cf7`
+ *   custom `[utm_source_cf7 my_field]`  tag TYPE `{param}_cf7` (registered by
+ *                                       lite/contact-form-7.php), NAME user-chosen
  *
- * Optional `also_add_to_email` ($options): also append a HandL block to both
- * mail bodies.
+ * Only the custom form has `{param}_cf7` right after the bracket, so the
+ * patterns never collide. Custom tags are excluded from a fresh block (else the
+ * param posts twice under two names) and removed on remove (the tag type only
+ * resolves because we register it, so it is unambiguously ours).
  */
 class Contact_Form_7_Integration extends Handl_Integration {
 
@@ -28,17 +29,41 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	const MAIL_END   = '/* HandL UTM end */';
 
 	/**
-	 * Load a single CF7 form without touching WPCF7_ContactForm::$current.
+	 * Our injected block tags: `[hidden {param}_cf7 …]`.
 	 *
-	 * CF7's get_instance()/wpcf7_contact_form() always overwrite the global
-	 * "current" form as a side effect. Our admin code (setup notice, health
-	 * checks, AJAX) runs before the CF7 list page renders; if $current is left
-	 * set, CF7's wpcf7_admin_management_page() shows that form's editor instead
-	 * of the form list.
+	 * @param string $param Tracked param name.
+	 * @return string Regex.
+	 */
+	private static function pattern_ours( $param ) {
+		return '/\[hidden\s+' . preg_quote( $param . '_cf7', '/' ) . '[^\]]*\]/';
+	}
+
+	/**
+	 * Custom tags: `[{param}_cf7 name …]`. Bracket-anchored so it never
+	 * matches the block form.
 	 *
-	 * WPCF7_ContactForm::find() is the only public accessor that returns form
-	 * objects without assigning $current (the constructor is private), so we
-	 * query by post ID through it.
+	 * @param string $param Tracked param name.
+	 * @return string Regex.
+	 */
+	private static function pattern_pro( $param ) {
+		return '/\[' . preg_quote( $param . '_cf7', '/' ) . '(?:\s[^\]]*)?\]/';
+	}
+
+	/**
+	 * Mail-tag reference: `[{param}_cf7]` or `[_raw_{param}_cf7]`.
+	 * Bracket-anchored (else utm_source matches inside first_utm_source).
+	 *
+	 * @param string $param Tracked param name.
+	 * @return string Regex.
+	 */
+	private static function pattern_mail_tag( $param ) {
+		return '/\[(?:_raw_)?' . preg_quote( $param . '_cf7', '/' ) . '\]/';
+	}
+
+	/**
+	 * CATCH: never use get_instance()/wpcf7_contact_form() here — they set
+	 * WPCF7_ContactForm::$current as a side effect, which makes CF7's admin
+	 * list page render an editor instead of the list. find() does not.
 	 *
 	 * @param int|string $form_id
 	 * @return \WPCF7_ContactForm|null
@@ -117,58 +142,81 @@ class Contact_Form_7_Integration extends Handl_Integration {
 				continue;
 			}
 
-			$props = $cf->get_properties();
-
+			$props              = $cf->get_properties();
 			$original_form_text = isset( $props['form'] ) ? (string) $props['form'] : '';
 
-			$added   = 0;
-			$skipped = 0;
-			$removed = 0;
+			$added    = 0;
+			$skipped  = 0;
+			$removed  = 0;
+			$to_write = array();
 
+			// Strip only block tags; custom tags are user-placed, never rewritten.
 			$form_text = $this->strip_block( $original_form_text, self::FORM_START, self::FORM_END );
 			$form_text = $this->strip_legacy_lines( $form_text, $this->get_tracked_params() );
 
 			if ( $action === 'add' ) {
-				// "skipped" = params already present in the pre-strip blob (we
-				// rewrite them); "added" = the rest.
 				foreach ( $param_keys as $param ) {
-					$pattern = '/\[hidden\s+' . preg_quote( $param . '_cf7', '/' ) . '[^\]]*\]/';
-					if ( preg_match( $pattern, $original_form_text ) === 1 ) {
+					if ( preg_match( self::pattern_pro( $param ), $original_form_text ) === 1 ) {
+						// Covered by a custom tag; adding it again would double-post.
 						$skipped++;
+						continue;
+					}
+					if ( preg_match( self::pattern_ours( $param ), $original_form_text ) === 1 ) {
+						$skipped++; // strip-and-rewritten, not new
 					} else {
 						$added++;
 					}
+					$to_write[] = $param;
 				}
-				$block     = $this->build_form_block( $param_keys, $form_id );
-				$form_text = $this->insert_before_submit( $form_text, $block );
+
+				if ( ! empty( $to_write ) ) {
+					$block     = $this->build_form_block( $to_write, $form_id );
+					$form_text = $this->insert_before_submit( $form_text, $block );
+				}
 			} else {
-				// "removed" = total `[hidden {param}_cf7 ...]` tags present in
-				// the pre-strip blob (covers both our marker block and any
-				// legacy stray lines outside it).
 				foreach ( $this->get_tracked_params() as $param ) {
-					$pattern  = '/\[hidden\s+' . preg_quote( $param . '_cf7', '/' ) . '[^\]]*\]/';
-					$removed += preg_match_all( $pattern, $original_form_text );
+					$removed += preg_match_all( self::pattern_ours( $param ), $original_form_text );
+
+					// Custom tags are unambiguously ours; remove clears them too.
+					$pro_hits = preg_match_all( self::pattern_pro( $param ), $form_text );
+					if ( $pro_hits ) {
+						$removed  += $pro_hits;
+						$form_text = preg_replace( self::pattern_pro( $param ), '', $form_text );
+					}
 				}
 			}
 			$props['form'] = $form_text;
 
-			// Mail bodies: always strip on remove; on add only when user opted in.
+			// Mail bodies: always strip on remove; on add only when opted in.
 			foreach ( array( 'mail', 'mail_2' ) as $mail_key ) {
 				if ( ! isset( $props[ $mail_key ]['body'] ) ) {
 					continue;
 				}
 				$body = (string) $props[ $mail_key ]['body'];
 				$body = $this->strip_block( $body, self::MAIL_START, self::MAIL_END );
-				if ( $action === 'add' && $also_email ) {
-					$body = rtrim( $body ) . "\n\n" . $this->build_mail_block( $param_keys );
+
+				if ( $action === 'add' && $also_email && ! empty( $to_write ) ) {
+					// Skip params already referenced by hand in the mail body
+					// (checked post-strip, so our own block never counts) —
+					// else docs-followers get every value twice per email.
+					$mail_params = array();
+					foreach ( $to_write as $param ) {
+						if ( preg_match( self::pattern_mail_tag( $param ), $body ) !== 1 ) {
+							$mail_params[] = $param;
+						}
+					}
+					if ( ! empty( $mail_params ) ) {
+						$body = rtrim( $body ) . "\n\n" . $this->build_mail_block( $mail_params );
+					}
 				}
+
 				$props[ $mail_key ]['body'] = $body;
 			}
 
 			$cf->set_properties( $props );
 			$saved = $cf->save();
 
-			$ok = (bool) $saved;
+			$ok        = (bool) $saved;
 			$results[] = array(
 				'form_id' => (string) $form_id,
 				'ok'      => $ok,
@@ -197,9 +245,8 @@ class Contact_Form_7_Integration extends Handl_Integration {
 
 		$present = array();
 		foreach ( $this->get_tracked_params() as $param ) {
-			// Matches marker-block + legacy stray `[hidden {param}_cf7 ...]` tags.
-			$pattern = '/\[hidden\s+' . preg_quote( $param . '_cf7', '/' ) . '[^\]]*\]/';
-			if ( preg_match( $pattern, $form_text ) === 1 ) {
+			if ( preg_match( self::pattern_ours( $param ), $form_text ) === 1
+				|| preg_match( self::pattern_pro( $param ), $form_text ) === 1 ) {
 				$present[] = (string) $param;
 			}
 		}
@@ -208,7 +255,7 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	}
 
 	/**
-	 * Remove all content between (and including) the provided markers, along with any following single newline to prevent leftover blank lines.
+	 * Remove marker-fenced content incl. trailing whitespace.
 	 *
 	 * @param string $text
 	 * @param string $start
@@ -221,11 +268,10 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	}
 
 	/**
-	 * Strip stray `[hidden {param}_cf7 ...]` lines outside our marker block.
-	 * Handles legacy CF7 [hidden ...] tags to avoid duplication when adding fields.
+	 * Strip stray `[hidden {param}_cf7 …]` lines outside the marker block.
 	 *
 	 * @param string $text
-	 * @param array  $params
+	 * @param array  $params Tracked param names.
 	 * @return string
 	 */
 	private function strip_legacy_lines( $text, $params ) {
@@ -252,16 +298,14 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	}
 
 	/**
-	 * Emit legacy-format CF7 hidden-tag lines
-	 *
-	 * @param array $params
+	 * @param array $params  Tracked param names.
 	 * @param int   $form_id
 	 * @return string
 	 */
 	private function build_form_block( $params, $form_id ) {
 		$lines = array( self::FORM_START );
 		foreach ( $params as $param ) {
-			$name = $param . '_cf7';
+			$name    = $param . '_cf7';
 			$lines[] = sprintf(
 				'[hidden %s %s-%d class:%s id:%s]',
 				$name,
@@ -276,10 +320,9 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	}
 
 	/**
-	 * Mail-body block referencing the `_cf7`-suffixed field names, since CF7
-	 * mail-tags resolve against the form's field names.
+	 * Mail-tags resolve against field names, hence the `_cf7` suffix.
 	 *
-	 * @param array $params
+	 * @param array $params Tracked param names.
 	 * @return string
 	 */
 	private function build_mail_block( $params ) {

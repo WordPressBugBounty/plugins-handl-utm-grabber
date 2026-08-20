@@ -185,7 +185,19 @@ class Handl_Integrations_Manager {
 			return;
 		}
 
-		wp_send_json_success( array( 'forms' => array_values( $integration->get_forms() ) ) );
+		$forms = array();
+		foreach ( array_values( $integration->get_forms() ) as $form ) {
+			$status  = $integration->get_form_status( $form['id'] );
+			$forms[] = array(
+				'id'         => (string) $form['id'],
+				'title'      => (string) $form['title'],
+				'status'     => $status['status'],
+				'integrated' => $status['integrated'],
+				'missing'    => $status['missing'],
+			);
+		}
+
+		wp_send_json_success( array( 'forms' => $forms ) );
 	}
 
 	public function ajax_apply() {

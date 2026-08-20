@@ -6,43 +6,31 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 /**
  * Ninja Forms one-click hidden-field injector.
  *
- * Unlike Gravity Forms (one big fields[] array on the form) and Contact Form 7
- * (a single text blob), Ninja Forms stores each field as its own DB row and
- * exposes a per-field model API:
+ * NF stores each field as its own DB row, so fields are added one at a time.
+ * Injected fields are the documented setup: hidden field, key = param,
+ * `default` = the `{handl:{param}}` merge tag registered by external/ninja.php
+ * — so the render path needs no changes.
  *
- *   $field = Ninja_Forms()->form( $form_id )->field()->get();
- *   $field->update_settings([...])->save();
- *
- * So we add fields one at a time. Each injected field uses the documented
- * UTM Grabber NF setup (per docs.utmgrabber.com): a `hidden` field whose key
- * is the param name (e.g. `utm_source`) and whose `default` is the existing
- * `{handl:utm_source}` merge tag registered by `external/ninja.php`. NF
- * resolves the merge tag server-side at form render.
- *
- *
- * Identification: `param_for_field()` is the single source of truth (exact
- * `key`, or legacy `default` of "{handl:{param}}"); status detection and the
- * submission listener both use it. Add skips existing field `key`; Remove
- * deletes fields with a managed `default` only.
+ * CATCH: `param_for_field()` must be used by ALL THREE paths (detect, add-skip,
+ * remove). Docs-setup fields have an NF auto-generated key with the merge-tag
+ * default; a key-only add-skip would duplicate them.
  */
 class Ninja_Forms_Integration extends Handl_Integration {
 
 	/**
-	 * Resolve which tracked param a Ninja Forms field feeds.
-	 *
-	 * Primary: field key === param (our Add flow). Legacy (docs-guide setup):
-	 * NF auto-generated key, `default` is the `{handl:param}` merge tag.
+	 * Which tracked param a field feeds: key === param, or the docs-setup
+	 * vintage (auto-generated key, `{handl:param}` default).
 	 *
 	 * @param string $key     Field `key` setting.
 	 * @param string $default Field `default` setting.
-	 * @return string|null Tracked param name, or null if the field is untracked.
+	 * @return string|null null if untracked.
 	 */
 	public static function param_for_field( $key, $default ) {
 		$tracked = handl_lite_tracking_params();
 		if ( in_array( (string) $key, $tracked, true ) ) {
 			return (string) $key;
 		}
-		if ( preg_match( '/^\{handl:([a-z_]+)\}$/', (string) $default, $m )
+		if ( preg_match( '/^\{handl:([A-Za-z0-9_]+)\}$/', (string) $default, $m )
 			 && in_array( $m[1], $tracked, true ) ) {
 			return $m[1];
 		}
@@ -98,12 +86,12 @@ class Ninja_Forms_Integration extends Handl_Integration {
 				$results[] = $this->remove_fields_from_form( $form_id );
 			}
 
-			// Field model writes only touch `nf3_fields` / `nf3_field_meta`. NF
-			// keeps a denormalized form snapshot in `nf3_upgrades` (and a
-			// `nf_form_{id}` option fallback) that the THREE builder, public
-			// renderer, and merge-tag pipeline read from. Without busting it,
-			// any form that's been published through the builder before will
-			// keep showing the old field set after our edits.
+			// Field-model writes only touch `nf3_fields` / `nf3_field_meta`. NF
+			// keeps a denormalized form snapshot (nf3_upgrades, and an
+			// `nf_form_{id}` option fallback) that the builder, the public
+			// renderer and the merge-tag pipeline read from. Without busting it,
+			// any form previously published through the builder keeps showing
+			// the old field set.
 			if ( class_exists( '\WPN_Helper' ) ) {
 				\WPN_Helper::delete_nf_cache( $form_id );
 			}
@@ -135,12 +123,11 @@ class Ninja_Forms_Integration extends Handl_Integration {
 	}
 
 	/**
-	 * Insert one hidden field per requested param, skipping any that already
-	 * exist on the form
+	 * Insert one hidden field per param the form doesn't already capture (either vintage).
 	 *
 	 * @param int   $form_id
-	 * @param array $param_keys
-	 * @return array{form_id:int,ok:bool,message:string}
+	 * @param array $param_keys Tracked param names to add.
+	 * @return array{form_id:int,ok:bool,message:string,added:int,skipped:int,removed:int}
 	 */
 	private function add_fields_to_form( $form_id, $param_keys ) {
 		$existing_fields = \Ninja_Forms()->form( $form_id )->get_fields();
@@ -153,14 +140,14 @@ class Ninja_Forms_Integration extends Handl_Integration {
 			);
 		}
 
-		$existing_keys = array();
-		$max_order     = 0;
+		$existing_params = array();
+		$max_order       = 0;
 		foreach ( $existing_fields as $field ) {
-			$key   = (string) $field->get_setting( 'key' );
-			$order = (int) $field->get_setting( 'order' );
-			if ( $key !== '' ) {
-				$existing_keys[] = $key;
+			$param = self::param_for_field( $field->get_setting( 'key' ), $field->get_setting( 'default' ) );
+			if ( $param !== null ) {
+				$existing_params[] = $param;
 			}
+			$order = (int) $field->get_setting( 'order' );
 			if ( $order > $max_order ) {
 				$max_order = $order;
 			}
@@ -171,7 +158,7 @@ class Ninja_Forms_Integration extends Handl_Integration {
 		$skipped    = 0;
 
 		foreach ( $param_keys as $param ) {
-			if ( in_array( $param, $existing_keys, true ) ) {
+			if ( in_array( $param, $existing_params, true ) ) {
 				$skipped++;
 				continue;
 			}
@@ -185,7 +172,7 @@ class Ninja_Forms_Integration extends Handl_Integration {
 				'order'   => $next_order,
 			) )->save();
 
-			$existing_keys[] = $param;
+			$existing_params[] = $param;
 			$next_order++;
 			$added++;
 		}
@@ -208,10 +195,12 @@ class Ninja_Forms_Integration extends Handl_Integration {
 	}
 
 	/**
-	 * Delete fields whose `default` matches one of our managed merge tags.
+	 * Delete fields whose `default` is a managed merge tag. Narrower than
+	 * detection on purpose: a field keyed `utm_source` with no managed default
+	 * could be the user's own — only delete what we can prove we manage.
 	 *
 	 * @param int $form_id
-	 * @return array{form_id:int,ok:bool,message:string}
+	 * @return array{form_id:int,ok:bool,message:string,added:int,skipped:int,removed:int}
 	 */
 	private function remove_fields_from_form( $form_id ) {
 		$fields = \Ninja_Forms()->form( $form_id )->get_fields();

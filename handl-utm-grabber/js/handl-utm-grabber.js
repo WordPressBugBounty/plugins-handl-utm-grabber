@@ -12,6 +12,30 @@ function RunHandL(){
     setHandLParams()
     RunFieldFiller()
     HandLAppendTrackedLinks()
+    HandLBindNinjaFormsFiller()
+}
+
+// NF inputs (#nf-field-{id}) carry no param name, so the generic selector
+// pass can't reach them; re-fill on nfFormReady ('' when the cookie is absent).
+var handlNfFillerBound = false
+function HandLBindNinjaFormsFiller(){
+    if (handlNfFillerBound) return
+    handlNfFillerBound = true
+
+    jQuery(document).on( 'nfFormReady', function () {
+        if (typeof nfForms === 'undefined') return
+        nfForms.forEach(function (form) {
+            form.fields.map(function (item) {
+                if (item.default) {
+                    var matches = String(item.default).match(/^{(\w+):(\w+)/)
+                    if (matches && matches.length == 3 && matches[1] === 'handl') {
+                        var c = Cookies.get(matches[2])
+                        jQuery('#nf-field-' + item.id).val(c === undefined ? '' : decodeURIComponent(c).replace(/[%]/g,' '))
+                    }
+                }
+            })
+        })
+    })
 }
 
 // IP stays server-side.
@@ -99,7 +123,16 @@ function RunFieldFiller(){
                 //Maybe this should apply to all... We'll see...
                 curval = curval.replace(/\+/g, ' ')
             }
+        } else {
+            // No cookie: blank tracked fields (cached pages carry baked values).
+            // skip email/username
+            if ([ 'email', 'username' ].indexOf(v) !== -1) {
+                return
+            }
+            curval = ''
+        }
 
+        {
             jQuery('input[name=\"'+v+'\"]').val(curval)
             jQuery('input#'+v).val(curval)
             jQuery('input.'+v).val(curval)

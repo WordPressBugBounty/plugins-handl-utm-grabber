@@ -5,6 +5,10 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * Gravity Forms one-click hidden-field injector.
+ *
+ * Detection keys on `inputName = {param}` — every vintage sets it identically,
+ * so already-configured sites read `complete` and re-apply is a no-op. Labels
+ * (`{param} (HandL)` / `HandL ( {param} )`) are only a fallback.
  */
 class Gravity_Forms_Integration extends Handl_Integration {
 
@@ -112,12 +116,12 @@ class Gravity_Forms_Integration extends Handl_Integration {
 				if ( in_array( $param, $present, true ) ) {
 					continue;
 				}
-				// Primary: inputName === param.
+				// Primary: inputName === param (identical across vintages).
 				if ( $input_name === $param ) {
 					$present[] = $param;
 					continue;
 				}
-				// Legacy
+				// Fallback: a HandL-marked label naming the param (both label vintages).
 				if ( strpos( $label, 'HandL' ) !== false && strpos( $label, $param ) !== false ) {
 					$present[] = $param;
 				}
@@ -128,10 +132,11 @@ class Gravity_Forms_Integration extends Handl_Integration {
 	}
 
 	/**
-	 * Append HandL hidden fields to a form for any param not already present.
+	 * Append hidden fields for any param not already present (skip keyed on
+	 * `inputName`, same as detection — no duplicates on legacy setups).
 	 *
-	 * @param array $form
-	 * @param array $param_keys
+	 * @param array $form       GF form array.
+	 * @param array $param_keys Tracked param names to add.
 	 * @return array{0: array, 1: int, 2: int} [ $form, $added, $skipped ]
 	 */
 	private function add_fields_to_form( $form, $param_keys ) {
@@ -209,20 +214,28 @@ class Gravity_Forms_Integration extends Handl_Integration {
 	}
 
 	/**
-	 * Drop every field whose label contains "HandL" — covers both the legacy
-	 * `HandL ( ... )` and the v3 `... (HandL)` formats.
+	 * Drop every field we're responsible for, any vintage: `inputName` is a
+	 * tracked param (docs-guide setups can have ANY label, so label-matching
+	 * alone strands them), or the label contains "HandL" (old fields may have
+	 * no inputName).
 	 *
-	 * @param array $form
+	 * @param array $form GF form array.
 	 * @return array{0: array, 1: int} [ $form, $removed ]
 	 */
 	private function remove_fields_from_form( $form ) {
+		$tracked        = array_map( 'strval', $this->get_tracked_params() );
 		$before         = count( $form['fields'] );
 		$form['fields'] = array_values(
 			array_filter(
 				$form['fields'],
-				function ( $field ) {
-					$label = isset( $field->label ) ? $field->label : ( isset( $field['label'] ) ? $field['label'] : '' );
-					return preg_match( '/HandL/', (string) $label ) === 0;
+				function ( $field ) use ( $tracked ) {
+					$label      = isset( $field->label ) ? $field->label : ( isset( $field['label'] ) ? $field['label'] : '' );
+					$input_name = isset( $field->inputName ) ? $field->inputName : ( isset( $field['inputName'] ) ? $field['inputName'] : '' );
+
+					$is_ours = ( (string) $input_name !== '' && in_array( (string) $input_name, $tracked, true ) )
+						|| strpos( (string) $label, 'HandL' ) !== false;
+
+					return ! $is_ours;
 				}
 			)
 		);

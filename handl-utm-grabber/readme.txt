@@ -3,7 +3,7 @@ Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
 Tested up to: 7.0
-Stable tag: 2.9.11
+Stable tag: 2.9.12
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -147,6 +147,12 @@ Yes. The free plugin can wait for marketing consent through WP Consent API and a
 17. Zapier — configure the webhook URL in HandL Options
 
 == Changelog ==
+= 2.9.12 =
+* New: Client side tracking for Gravity Forms and Ninja Forms fields so values stay correct on cached pages
+* New: Server side tracking for Contact Form 7 hidden fields. Values are included in the page HTML and work even without JavaScript, and premium format CF7 tags now keep working in the free plugin
+* New: Per form connection status badges on the Integrations page (Connected, new fields available, Not connected)
+* Improved: More reliable field syncing across integrations when adding or removing tracking fields
+
 = 2.9.11 =
 * New: WP Consent API integration lets HandL work with compatible consent plugins and wait for marketing consent before capturing attribution
 * Security: Updated the bundled cookie library to address a reported vulnerability and improve security

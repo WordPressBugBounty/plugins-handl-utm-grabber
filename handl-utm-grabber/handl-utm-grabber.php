@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.11
+ * Version: 2.9.12
  * Author URI: https://www.utmgrabber.com/
 */
 
@@ -97,8 +97,12 @@ function CaptureUTMs(){
 
 		HandlCreateShortcode($field, $cookie_field);
 
-		//This is for Gravity Forms
-		add_filter( 'gform_field_value_'.$field, function() use ($field) {
+		//This is for Gravity Forms. Explicit prepopulation ($_GET / field_values)
+		//reaches the filter as $value — let it win over the cookie.
+		add_filter( 'gform_field_value_'.$field, function( $value = '' ) use ($field) {
+			if ( ! empty( $value ) ) {
+				return $value;
+			}
 			if (!isset($_COOKIE[$field])) {
 				return '';
 			}
@@ -446,6 +450,15 @@ function handl_lite_tracking_params() {
         'handl_ip',
         'gclid',
     );
+}
+
+if ( ! function_exists( 'handl_sanitize_tracking_value' ) ) {
+	function handl_sanitize_tracking_value( $value ) {
+		if ( is_array( $value ) ) {
+			$value = implode( ',', $value );
+		}
+		return sanitize_text_field( wp_unslash( (string) $value ) );
+	}
 }
 
 function HUGGenerateUTMsForURL(){
