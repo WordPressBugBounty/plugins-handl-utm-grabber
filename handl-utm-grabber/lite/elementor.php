@@ -24,7 +24,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
 
 
 if (class_exists('\Elementor\Core\DynamicTags\Tag')) {
-	class Cookies extends \Elementor\Core\DynamicTags\Tag {
+	class HandL_Free_Cookies extends \Elementor\Core\DynamicTags\Tag {
 		public function get_name() {
 			return 'cookies';
 		}
@@ -110,6 +110,6 @@ if (class_exists('\Elementor\Core\DynamicTags\Tag')) {
 		] );
 
 		// Finally register the tag
-		$dynamic_tags->register_tag( 'Cookies' );
+		$dynamic_tags->register_tag( 'HandL_Free_Cookies' );
 	} );
 }

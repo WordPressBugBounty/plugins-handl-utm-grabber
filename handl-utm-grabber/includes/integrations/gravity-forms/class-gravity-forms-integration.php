@@ -78,14 +78,16 @@ class Gravity_Forms_Integration extends Handl_Integration {
 			return $results;
 		}
 
-		$update_results = \GFAPI::update_forms( $updated_forms );
+		// True on success, one WP_Error for the whole batch otherwise; GF gives no per-form results.
+		$update_result = \GFAPI::update_forms( $updated_forms );
+		$all_ok        = $update_result === true;
+		$failure       = is_wp_error( $update_result ) ? $update_result->get_error_message() : 'Update failed.';
 
 		foreach ( $updated_forms as $i => $form ) {
-			$ok = isset( $update_results[ $i ] ) ? $update_results[ $i ] === true : true;
 			$results[] = array(
 				'form_id' => (string) (int) $form['id'],
-				'ok'      => (bool) $ok,
-				'message' => $ok ? 'Updated.' : 'Update failed.',
+				'ok'      => $all_ok,
+				'message' => $all_ok ? 'Updated.' : $failure,
 				'added'   => $counts[ $i ]['added'],
 				'skipped' => $counts[ $i ]['skipped'],
 				'removed' => $counts[ $i ]['removed'],

@@ -264,14 +264,25 @@ class Handl_Onboarding_Manager {
 				continue;
 			}
 
-			$fields        = $integration->get_tracked_params();
-			$apply_results = $integration->apply( $form_ids, $fields, 'add', array() );
+			$fields = $integration->get_tracked_params();
+			$rows   = $integration->apply( $form_ids, $fields, 'add', array() );
+			$ok_ids = array();
+			foreach ( $rows as $row ) {
+				if ( ! empty( $row['ok'] ) && isset( $row['form_id'] ) ) {
+					$ok_ids[] = (string) $row['form_id'];
+				}
+			}
 
-			$results[ $slug ]        = array(
-				'ok'      => true,
-				'results' => $apply_results,
+			$results[ $slug ] = array(
+				'ok'      => ! empty( $ok_ids ) && count( $ok_ids ) === count( $form_ids ),
+				'results' => $rows,
 			);
-			$selected_forms[ $slug ] = $form_ids;
+			if ( ! $results[ $slug ]['ok'] ) {
+				$results[ $slug ]['error'] = 'One or more forms could not be updated.';
+			}
+			if ( ! empty( $ok_ids ) ) {
+				$selected_forms[ $slug ] = $ok_ids;
+			}
 		}
 
 		// Persist the picks so a refresh on /test still has context.

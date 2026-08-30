@@ -64,13 +64,14 @@ class Handl_Snapshot_Renderer {
 			// box-sizing matters: these are padded TDs, and width:100% + padding
 			// in content-box overflows the viewport and crops the whole email.
 			. ' .tile { display: block !important; width: 100% !important; margin-bottom: 8px !important; box-sizing: border-box !important; }'
+			// Stacked tiles carry their own margin, so the gutter cells would add stray rows.
+			. ' .gutter { display: none !important; }'
 			. ' .two-col { display: block !important; width: 100% !important; border-right: 0 !important; box-sizing: border-box !important; }'
 			. ' .gtile { display: block !important; width: 100% !important; box-sizing: border-box !important; }'
 			// Card rows (demo, review) stack: ALL cells in the row must go block —
 			// a lone block td gets wrapped in an anonymous cell and keeps its slot.
 			. ' .stack { display: block !important; width: 100% !important; box-sizing: border-box !important; }'
-			. ' .rv-ico { display: none !important; }'
-			. ' .rv-cta, .dm-cta { display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: left !important; padding: 12px 0 0 0 !important; }'
+			. ' .dm-cta { display: block !important; width: 100% !important; box-sizing: border-box !important; text-align: left !important; padding: 12px 0 0 0 !important; }'
 			. '}</style>'
 			. '</head>'
 			. '<body style="margin:0; padding:0; background-color:#F7F8FA; font-family:' . self::FONT . '; color:' . self::INK . '; line-height:1.55; -webkit-text-size-adjust:100%;">'
@@ -226,11 +227,17 @@ class Handl_Snapshot_Renderer {
 			);
 		}
 
-		$width = count( $tiles ) === 2 ? '50%' : '33.3%';
+		// Background on the cell, not a nested table: sibling cells share the row
+		// height, so the boxes stay equal however tall their content runs.
+		$count = count( $tiles );
+		$width = $count > 0 ? floor( 100 / $count ) - 1 : 100;
 		$cells = array();
 		foreach ( $tiles as $i => $tile ) {
-			$pad     = $i === 0 ? 'padding-right:6px;' : ( $i === count( $tiles ) - 1 ? 'padding-left:6px;' : 'padding:0 3px;' );
-			$cells[] = '<td class="tile" width="' . $width . '" valign="top" style="' . $pad . '">' . $tile . '</td>';
+			if ( $i > 0 ) {
+				// The div gives the cell a min-width; an empty gutter collapses to nothing.
+				$cells[] = '<td class="gutter" width="6" style="font-size:0; line-height:0;"><div style="width:6px; height:1px; font-size:0; line-height:0;">&nbsp;</div></td>';
+			}
+			$cells[] = '<td class="tile" width="' . $width . '%" valign="top" bgcolor="#F2F4F7" style="background-color:#F2F4F7; border-radius:10px; padding:22px 12px;">' . $tile . '</td>';
 		}
 
 		return $this->row(
@@ -294,16 +301,16 @@ class Handl_Snapshot_Renderer {
 
 		$legend = array();
 		foreach ( $rows as $row ) {
-			$legend[] = '<td style="padding:5px 0; font-size:14px;">'
-				. '<span style="color:' . self::CHANNEL_COLORS[ $row['channel'] ] . '; font-weight:700;">&#9632;</span> '
-				. esc_html( $row['label'] ) . ' <strong>' . (int) $row['pct'] . '%</strong> '
+			$legend[] = '<td width="50%" style="padding:5px 0; font-size:14px; white-space:nowrap;">'
+				. '<span style="color:' . self::CHANNEL_COLORS[ $row['channel'] ] . '; font-weight:700;">&#9632;</span>&nbsp;'
+				. str_replace( ' ', '&nbsp;', esc_html( $row['label'] ) ) . '&nbsp;<strong>' . (int) $row['pct'] . '%</strong>&nbsp;'
 				. $this->delta_chip( $row['delta_pts'] )
 				. '</td>';
 		}
 		$legend_rows = '';
-		foreach ( array_chunk( $legend, 3 ) as $chunk ) {
-			while ( count( $chunk ) < 3 ) {
-				$chunk[] = '<td style="padding:5px 0;"></td>';
+		foreach ( array_chunk( $legend, 2 ) as $chunk ) {
+			if ( count( $chunk ) < 2 ) {
+				$chunk[] = '<td width="50%" style="padding:5px 0;"></td>';
 			}
 			$legend_rows .= '<tr>' . implode( '', $chunk ) . '</tr>';
 		}
@@ -677,16 +684,20 @@ class Handl_Snapshot_Renderer {
 	private function review_card( $milestone ) {
 		return $this->row(
 			'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid #F1D9A6; background-color:#FFFBF2; border-radius:8px;"><tr><td style="padding:18px 22px;">'
-			. '<table role="presentation" width="100%"><tr>'
-			. '<td class="rv-ico" valign="middle" width="34" style="padding-right:12px;"><img src="' . esc_url( $this->img( 'star-amber.png' ) ) . '" width="26" height="26" alt="" style="display:block; width:26px; height:26px; border:0;"></td>'
-			. '<td class="stack" valign="middle">'
+			. '<table role="presentation" width="100%">'
+			. '<tr>'
+			. '<td valign="top" width="34" style="padding-right:12px;"><img src="' . esc_url( $this->img( 'star-amber.png' ) ) . '" width="26" height="26" alt="" style="display:block; width:26px; height:26px; border:0;"></td>'
+			. '<td valign="top">'
 			. '<p style="margin:0 0 3px 0; font-size:15px; font-weight:700;">You have tracked your ' . esc_html( $this->ordinal( $milestone ) ) . ' lead with UTM&nbsp;Grabber.</p>'
 			. '<p style="margin:0; font-size:13.5px; color:#6B5A2E; line-height:1.5;">The plugin is free because reviews keep it visible. A 30-second review on WordPress.org means a lot.</p>'
 			. '</td>'
-			. '<td class="rv-cta" valign="middle" align="right" width="150" style="padding-left:12px;">'
+			. '</tr>'
+			. '<tr>'
+			. '<td colspan="2" style="padding:14px 0 0 0;">'
 			. '<a href="https://wordpress.org/support/plugin/handl-utm-grabber/reviews/#new-post" style="display:inline-block; background-color:' . self::AMBER . '; color:#ffffff; padding:11px 16px; border-radius:6px; text-decoration:none; font-weight:700; font-size:13.5px; line-height:16px;">Leave a review&nbsp;&rarr;</a>'
 			. '</td>'
-			. '</tr></table>'
+			. '</tr>'
+			. '</table>'
 			. '</td></tr></table>',
 			'padding-bottom:22px;'
 		);
@@ -766,15 +777,14 @@ class Handl_Snapshot_Renderer {
 			$size = 38;
 		}
 
-		return '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#F2F4F7; border-radius:10px;"><tr><td style="padding:22px 20px;">'
-			. '<p style="margin:0; font-family:' . self::FONT_NUM . '; font-size:' . $size . 'px; font-weight:700; letter-spacing:-1.6px; line-height:1; color:' . $number_color . ';">' . $number_html . '</p>'
+		return '<p style="margin:0; font-family:' . self::FONT_NUM . '; font-size:' . $size . 'px; font-weight:700; letter-spacing:-1.6px; line-height:1; color:' . $number_color . ';">' . $number_html . '</p>'
 			. '<p style="margin:10px 0 0 0; font-size:13px; font-weight:700; color:' . self::INK . ';">' . $sublabel . '</p>'
-			. ( $trend_html !== '' ? '<p style="margin:5px 0 0 0; font-size:12px; font-weight:700;">' . $trend_html . '</p>' : '' )
-			. '</td></tr></table>';
+			// Rendered even when empty so every tile's text block is the same height.
+			. '<p style="margin:5px 0 0 0; font-size:12px; font-weight:700;">' . ( $trend_html !== '' ? $trend_html : '&nbsp;' ) . '</p>';
 	}
 
 	private function mini_stat( $number_html, $label, $pad ) {
-		return '<td valign="top" width="33.3%" style="' . $pad . '">'
+		return '<td class="tile" valign="top" width="33.3%" style="' . $pad . '">'
 			. '<p style="margin:0; font-family:' . self::FONT_NUM . '; font-size:28px; font-weight:700; letter-spacing:-1px; line-height:1; color:' . self::BLUE . ';">' . $number_html . '</p>'
 			. '<p style="margin:6px 0 0 0; font-size:12px; color:' . self::BODY . ';">' . esc_html( $label ) . '</p>'
 			. '</td>';

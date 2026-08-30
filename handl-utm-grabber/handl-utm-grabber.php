@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.12
+ * Version: 2.9.13
  * Author URI: https://www.utmgrabber.com/
 */
 
@@ -15,7 +15,28 @@ use Handl\UtmrabberFree\Integrations\Handl_Integrations_Manager;
 use Handl\UtmrabberFree\Onboarding\Handl_Onboarding_Manager;
 use Handl\UtmrabberFree\TrackingDoctor\Handl_Tracking_Doctor_Manager;
 
+// Above the guard: on a handoff this file bails, but the hook still needs to register.
+function handl_utm_grabber_activate() {
+    if ( ! get_option( 'handl_onboarding_completed', false ) ) {
+        update_option( 'handl_onboarding_redirect', true );
+    }
+}
+register_activation_hook( __FILE__, 'handl_utm_grabber_activate' );
+
+// v3 may already be in-process (wp plugin activate/toggle includes us after
+// v3 loaded). Bail before requiring zapier.php — those handlers are unwrapped
+// in older free builds and collide with premiums/formSubmitHandles.php.
+// function_exists wrappers still cover the reverse load order.
+if ( defined( 'HANDL_UTM_GRABBER_V3_VERSION' ) || function_exists( 'handl_utm_grabber_v3_activated' ) ) {
+	return;
+}
+
 define( 'HANDL_UTM_V3_LINK', 'https://utmgrabber.com' );
+
+function handl_utm_grabber_step_aside() {
+	deactivate_plugins( 'handl-utm-grabber/handl-utm-grabber.php' );
+}
+add_action( 'activate_handl-utm-grabber-v3/handl-utm-grabber-v3.php', 'handl_utm_grabber_step_aside' );
 $handl_free_header = get_file_data( __FILE__, array( 'Version' => 'Version' ) );
 define( 'HANDL_UTM_GRABBER_FREE_VERSION', isset( $handl_free_header['Version'] ) ? $handl_free_header['Version'] : '' );
 define( 'PREMIUM_FEATURES', ['Organic Traffic (Google, Bing etc.)', 'Google Ads (ValueTrack Params e.g. keyword)' , 'Facebook Ads (fbclid)', 'Traffic Source (Paid, Organic, Referrer, Direct)','First/Last attribution', 'Microsoft Ads (msclkid)', 'Affiliate Marketing']);
@@ -30,6 +51,7 @@ foreach (glob(plugin_dir_path(__FILE__) . 'lite/*.php') as $lite_integration_fil
 add_filter('widget_text', 'do_shortcode');
 
 add_action('init', 'CaptureUTMs');
+if ( ! function_exists( 'CaptureUTMs' ) ) {
 function CaptureUTMs(){
 
 	if ( is_admin() || $GLOBALS['pagenow'] === 'wp-login.php' || defined( 'DOING_CRON' ) || ! HandLCookieConsented() ) {
@@ -110,6 +132,7 @@ function CaptureUTMs(){
 		});
 	}
 }
+}
 
 if ( ! function_exists( 'HandlCreateShortcode' ) ) {
 	function HandlCreateShortcode($field, $cookie_field)
@@ -130,29 +153,37 @@ if ( ! function_exists( 'generateUTMFields' ) ) {
 	}
 }
 
+if ( ! function_exists( 'HandLCookieConsented' ) ) {
 function HandLCookieConsented()
 {
 	$good2go = apply_filters('is_ok_to_capture_utms', array('good2go' => 1));
 	return $good2go["good2go"];
 }
+}
 
+if ( ! function_exists( 'handl_utm_grabber_enqueue' ) ) {
 function handl_utm_grabber_enqueue(){
 	wp_enqueue_script( 'js.cookie', plugins_url( '/js/js.cookie.js' , __FILE__ ), array( 'jquery' ), '3.0.5' );
 	wp_enqueue_script( 'handl-utm-grabber', plugins_url( '/js/handl-utm-grabber.js' , __FILE__ ), array( 'jquery','js.cookie' ), HANDL_UTM_GRABBER_FREE_VERSION );
 	wp_localize_script( 'handl-utm-grabber', 'handl_utm', HUGGenerateUTMsForURL() );
 	wp_localize_script( 'handl-utm-grabber', 'handl_utm_cookie_duration', array( 30, HandLCookieConsented() ) );
 }
+}
 add_action( 'wp_enqueue_scripts', 'handl_utm_grabber_enqueue' );
 
+if ( ! function_exists( 'handl_utm_grabber_enqueue_admin' ) ) {
 function handl_utm_grabber_enqueue_admin(){
     wp_register_script( 'handl-utm-grabber-admin', plugins_url( '/js/admin.js' , __FILE__ ), array( 'jquery') );
     wp_register_style( 'handl-utm-grabber-admin-css', plugins_url('/css/admin.css', __FILE__) );
     wp_enqueue_style('handl-utm-grabber-admin-css');
 }
+}
 add_action( 'admin_enqueue_scripts', 'handl_utm_grabber_enqueue_admin' );
 
+if ( ! function_exists( 'handl_utm_grabber_enable_shortcode' ) ) {
 function handl_utm_grabber_enable_shortcode($val){
 	return do_shortcode($val);
+}
 }
 add_filter('salesforce_w2l_field_value', 'handl_utm_grabber_enable_shortcode');
 add_filter( 'wpcf7_form_elements', 'handl_utm_grabber_enable_shortcode' );
@@ -165,6 +196,7 @@ function handl_utm_grabber_couponhunt_theme_support($value, $post_id, $field){
 }
 add_filter( "acf/load_value/name=url", "handl_utm_grabber_couponhunt_theme_support", 10, 3);
 
+if ( ! function_exists( 'handl_utm_grabber_menu' ) ) {
 function handl_utm_grabber_menu() {
 
 	add_submenu_page(
@@ -194,6 +226,7 @@ function handl_utm_grabber_menu() {
         '__return_null'
     );
 }
+}
 add_action( 'admin_menu', 'handl_utm_grabber_menu' );
 
 function handl_premium_link_new_tab() {
@@ -213,6 +246,7 @@ add_action( 'admin_footer', 'handl_premium_link_new_tab' );
 
 
 
+if ( ! function_exists( 'handl_apps' ) ) {
 function handl_apps(){
     wp_enqueue_script('handl-utm-grabber-admin');
     ?>
@@ -332,6 +366,7 @@ function handl_apps(){
     </div>
     <?php
 }
+}
 
 function handl_kb(){
 	wp_enqueue_script('handl-utm-grabber-admin');
@@ -375,6 +410,7 @@ function handl_kb(){
 
 
 
+if ( ! function_exists( 'HUG_Append_All' ) ) {
 function HUG_Append_All($content) {
   if ($content != '' && get_option('hug_append_all') == 1) {
     if (!function_exists('str_get_html'))
@@ -429,6 +465,7 @@ function HUG_Append_All($content) {
   }
   return $content;
 }
+}
 add_filter( 'the_content', 'HUG_Append_All', 999 );
 
 function handl_utm_variables(){
@@ -461,6 +498,7 @@ if ( ! function_exists( 'handl_sanitize_tracking_value' ) ) {
 	}
 }
 
+if ( ! function_exists( 'HUGGenerateUTMsForURL' ) ) {
 function HUGGenerateUTMsForURL(){
   if ( ! HandLCookieConsented() ) {
     return array();
@@ -474,6 +512,7 @@ function HUGGenerateUTMsForURL(){
     }
   }
   return $utms;
+}
 }
 
 function sanitizeQueryArgs($cookie_str){
@@ -495,17 +534,21 @@ function sanitizeQueryArgs($cookie_str){
 //}
 //add_filter('smile_render_setting', 'handl_utm_grabber_setting',10,1);
 
+if ( ! function_exists( 'handl_utm_nav_menu_link_attributes' ) ) {
 function handl_utm_nav_menu_link_attributes($atts, $item, $args){
 	if (isset($atts['href']) && $atts['href'] != '' && get_option( 'hug_append_all' ) == 1){
 		$atts['href'] = add_query_arg( HUGGenerateUTMsForURL(), $atts['href'] );
 	}
 	return $atts;
 }
+}
 add_filter('nav_menu_link_attributes', 'handl_utm_nav_menu_link_attributes', 10 ,3);
 
+if ( ! function_exists( 'handl_utm_grabber_merge_tags' ) ) {
 function handl_utm_grabber_merge_tags(){
   require_once 'external/ninja.php';
   Ninja_Forms()->merge_tags[ 'handl_utm_merge_tags' ] = new HandLUTM_MergeTags();
+}
 }
 add_action( 'ninja_forms_loaded', 'handl_utm_grabber_merge_tags' );
 
@@ -600,6 +643,7 @@ function handl_dashboard_overview_widget_footer_actions() {
     return $actions;
 }
 
+if ( ! function_exists( 'get_icon_svg_handl' ) ) {
 function get_icon_svg_handl( $base64 = true ) {
     $svg = '<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"  "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd"> <svg version="1.0" xmlns="http://www.w3.org/2000/svg"  width="100%" height="100%" viewBox="0 0 512.000000 512.000000"  preserveAspectRatio="xMidYMid meet"> <g transform="translate(0.000000,512.000000) scale(0.100000,-0.100000)" fill="#a0a5aa" stroke="none"> <path d="M306 4659 c-2 -8 -10 -32 -17 -54 -7 -22 -18 -49 -25 -60 -7 -11 -16 -37 -19 -57 -4 -21 -11 -38 -15 -38 -4 0 -16 -29 -25 -65 -10 -36 -21 -65 -26 -65 -4 0 -13 -22 -20 -50 -7 -27 -16 -50 -19 -50 -4 0 -15 -28 -25 -62 -10 -35 -22 -67 -26 -73 -15 -22 -77 -192 -84 -232 -7 -46 3 -65 43 -77 12 -4 22 -12 22 -17 0 -5 7 -9 16 -9 15 0 95 -39 104 -52 3 -3 18 -10 33 -13 15 -4 27 -11 27 -15 0 -4 20 -14 45 -21 25 -7 45 -16 45 -20 0 -4 11 -10 25 -13 14 -4 25 -10 25 -15 0 -5 14 -12 30 -16 17 -4 30 -10 30 -15 0 -4 12 -11 26 -14 15 -4 33 -14 41 -21 8 -8 23 -15 33 -15 10 0 20 -3 22 -7 4 -10 110 -63 126 -63 6 0 12 -3 12 -7 0 -5 27 -19 60 -33 33 -14 62 -31 65 -38 3 -8 10 -113 16 -235 6 -122 14 -231 19 -242 5 -11 14 -139 21 -285 12 -274 12 -275 22 -300 3 -8 13 -175 22 -370 9 -195 21 -363 26 -372 5 -10 9 -50 9 -90 0 -128 18 -253 46 -323 14 -36 30 -65 35 -65 5 0 9 -7 9 -15 0 -23 108 -124 162 -151 43 -22 60 -24 174 -24 111 0 132 3 173 23 25 12 48 25 49 30 2 4 12 7 22 7 10 0 25 7 33 15 8 7 27 17 43 21 16 4 35 13 42 21 7 7 20 13 28 13 8 0 14 4 14 9 0 5 14 12 30 16 17 4 30 10 30 15 0 4 20 13 45 19 25 6 45 15 45 20 0 5 12 12 26 15 14 4 43 18 64 31 21 13 50 27 64 31 14 3 26 10 26 14 0 5 14 11 30 15 17 4 30 10 30 15 0 5 14 11 30 15 17 4 30 11 30 16 0 5 6 9 13 9 6 0 35 12 62 25 28 14 56 25 63 25 6 0 12 4 12 9 0 5 12 12 27 16 15 3 30 10 33 13 6 8 94 52 104 52 4 0 14 7 22 15 9 8 24 15 35 15 10 0 19 5 19 10 0 6 4 10 10 10 13 0 124 51 130 60 3 4 18 10 34 14 15 4 35 14 43 21 22 22 37 18 51 -12 18 -42 55 -106 70 -121 6 -7 12 -19 12 -25 0 -7 17 -30 38 -52 20 -23 43 -53 51 -68 8 -15 18 -27 22 -27 11 0 79 -71 79 -82 0 -4 6 -8 13 -8 7 0 20 -8 29 -17 26 -28 45 -42 73 -55 14 -6 25 -15 25 -19 0 -4 11 -10 25 -13 14 -4 25 -10 25 -15 0 -5 14 -12 30 -16 17 -4 30 -11 30 -15 0 -5 16 -12 35 -16 19 -3 35 -10 35 -14 0 -5 19 -11 43 -15 23 -4 48 -12 56 -19 20 -15 422 -15 442 0 8 7 33 15 57 19 23 4 42 11 42 16 0 5 9 9 19 9 11 0 26 6 33 14 8 7 29 17 46 21 18 3 32 11 32 16 0 5 11 11 24 15 14 3 27 12 30 20 3 8 12 14 19 14 8 0 25 9 38 20 13 11 39 32 57 48 18 15 41 35 50 46 9 10 37 41 62 69 25 28 52 58 61 68 10 9 23 28 30 42 8 13 25 44 38 68 13 24 27 46 31 49 4 3 11 16 15 30 4 14 19 49 33 79 13 30 27 73 30 97 2 24 9 44 13 44 5 0 9 99 9 220 l0 220 -422 -2 -423 -3 -3 -217 -2 -218 130 0 c71 0 130 -3 130 -8 0 -4 -8 -15 -17 -23 -10 -9 -32 -33 -50 -53 -18 -20 -35 -36 -38 -36 -6 0 -67 -41 -75 -51 -3 -3 -18 -9 -35 -13 -16 -4 -33 -13 -37 -19 -11 -17 -280 -17 -285 1 -3 6 -12 12 -21 12 -21 0 -82 32 -119 62 -53 43 -133 129 -133 142 0 8 -7 19 -14 26 -8 6 -23 35 -32 63 -9 29 -20 54 -25 57 -13 9 -29 121 -29 204 0 85 17 206 29 206 5 0 14 19 21 43 7 23 21 54 31 69 11 14 19 29 19 33 0 14 92 110 139 145 18 14 38 30 44 35 33 28 148 55 234 55 49 0 93 -4 98 -9 6 -4 33 -14 60 -21 28 -8 52 -16 55 -19 12 -14 70 -51 80 -51 5 0 10 -4 10 -8 0 -5 18 -28 40 -51 22 -23 47 -53 56 -67 16 -24 18 -24 175 -24 87 0 160 4 163 8 3 5 30 7 60 4 30 -2 85 -1 121 3 54 5 65 10 65 25 0 10 -4 22 -10 25 -5 3 -10 16 -10 29 0 47 -122 279 -173 331 -10 9 -17 21 -17 27 0 18 -92 113 -170 176 -25 20 -53 44 -63 54 -10 10 -24 18 -32 18 -8 0 -15 5 -15 10 0 6 -5 10 -11 10 -7 0 -34 14 -61 30 -27 17 -72 36 -99 42 -27 6 -49 15 -49 19 0 4 -25 11 -55 14 -30 4 -58 11 -61 16 -7 12 -324 12 -324 0 0 -4 -27 -11 -60 -15 -33 -4 -60 -11 -60 -15 0 -5 -16 -12 -36 -16 -40 -7 -122 -43 -142 -62 -7 -7 -18 -13 -23 -13 -5 0 -15 -5 -22 -10 -7 -6 -33 -26 -59 -46 -27 -19 -48 -39 -48 -44 0 -6 -5 -10 -12 -10 -16 0 -129 -117 -153 -157 -11 -18 -23 -33 -27 -33 -4 0 -15 -15 -24 -32 -9 -18 -20 -35 -23 -38 -3 -3 -13 -18 -21 -35 -8 -16 -19 -37 -25 -45 -7 -8 -19 -36 -29 -62 -13 -34 -23 -48 -43 -53 -14 -3 -32 -13 -40 -20 -8 -8 -23 -15 -34 -15 -10 0 -19 -4 -19 -10 0 -5 -6 -10 -14 -10 -8 0 -21 -6 -28 -13 -7 -8 -26 -17 -42 -21 -16 -4 -35 -14 -43 -21 -8 -8 -23 -15 -34 -15 -10 0 -19 -4 -19 -10 0 -5 -4 -10 -10 -10 -16 0 -125 -52 -128 -61 -2 -5 -9 -9 -15 -9 -12 1 -158 -71 -167 -81 -3 -3 -17 -9 -32 -13 -16 -3 -28 -11 -28 -16 0 -6 -6 -10 -12 -10 -7 0 -50 -18 -96 -40 -46 -22 -87 -40 -92 -40 -6 0 -10 -4 -10 -9 0 -5 -12 -12 -27 -16 -15 -3 -30 -10 -33 -13 -7 -10 -95 -52 -109 -52 -6 0 -11 -4 -11 -9 0 -10 -31 -24 -38 -17 -5 5 -15 149 -51 736 -11 173 -22 344 -26 380 -3 36 -13 184 -22 330 -8 146 -20 267 -24 268 -5 2 -9 14 -9 26 0 25 -29 118 -40 126 -3 3 -12 20 -19 38 -8 17 -16 32 -20 32 -4 0 -15 14 -24 30 -10 17 -24 30 -31 30 -8 0 -16 7 -20 15 -3 8 -12 15 -21 15 -8 0 -15 4 -15 9 0 5 -21 20 -47 33 -27 13 -50 25 -53 28 -8 8 -92 47 -117 55 -13 3 -23 10 -23 15 0 5 -13 11 -30 15 -16 4 -30 10 -30 15 0 5 -13 11 -30 15 -16 4 -30 10 -30 15 0 4 -12 11 -27 15 -15 3 -30 10 -33 13 -7 10 -95 52 -108 52 -6 0 -12 4 -14 8 -4 10 -111 62 -127 62 -6 0 -11 4 -11 10 0 5 -12 13 -27 16 -16 4 -30 10 -33 13 -3 3 -41 24 -85 46 -44 22 -86 46 -93 53 -7 6 -20 12 -28 12 -16 0 -95 40 -104 52 -3 4 -25 10 -48 14 -31 5 -43 3 -46 -7z m945 -716 c50 -28 86 -62 100 -96 7 -18 18 -35 23 -39 6 -4 11 -42 11 -86 0 -61 -4 -83 -18 -96 -9 -10 -17 -24 -17 -31 0 -17 -57 -75 -75 -75 -7 0 -15 -6 -18 -12 -2 -9 -27 -13 -78 -13 l-74 0 -52 52 c-62 62 -79 111 -70 209 5 49 13 73 34 102 15 20 31 38 35 40 3 2 16 12 29 23 12 10 28 19 36 19 7 0 13 5 13 10 0 17 86 11 121 -7z m225 -2368 c9 -8 21 -15 27 -16 23 -1 66 -66 78 -115 6 -27 15 -56 19 -64 3 -8 3 -26 -1 -40 -4 -14 -13 -45 -19 -69 -13 -48 -80 -121 -112 -121 -10 0 -18 -4 -18 -10 0 -5 -25 -10 -55 -10 -30 0 -55 5 -55 10 0 6 -6 10 -13 10 -14 0 -45 23 -83 61 -28 28 -44 83 -44 156 0 71 14 115 46 150 13 14 24 30 24 34 0 5 6 9 14 9 8 0 21 6 29 14 28 29 135 29 163 1z"/> </g> </svg>';
 
@@ -608,6 +652,7 @@ function get_icon_svg_handl( $base64 = true ) {
     }
 
     return $svg;
+}
 }
 
 function handl_utm_grabber_action_links( $links ) {
@@ -750,13 +795,6 @@ if ( is_admin() ) {
     require_once "includes/tracking-doctor/class-tracking-doctor-manager.php";
     ( new Handl_Tracking_Doctor_Manager( $handl_integrations_manager ) )->register();
 }
-
-function handl_utm_grabber_activate() {
-    if ( ! get_option( 'handl_onboarding_completed', false ) ) {
-        update_option( 'handl_onboarding_redirect', true );
-    }
-}
-register_activation_hook( __FILE__, 'handl_utm_grabber_activate' );
 
 function handl_utm_grabber_deactivate() {
     wp_clear_scheduled_hook( \Handl\UtmrabberFree\WeeklySnapshot\Handl_Snapshot_Cron::HOOK );
