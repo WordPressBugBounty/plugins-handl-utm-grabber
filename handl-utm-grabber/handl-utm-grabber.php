@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.13
+ * Version: 2.9.14
  * Author URI: https://www.utmgrabber.com/
 */
 
@@ -785,6 +785,8 @@ require_once "includes/health/class-site-health-manager.php";
 
 require_once "includes/weekly-snapshot/class-weekly-snapshot-manager.php";
 ( new \Handl\UtmrabberFree\WeeklySnapshot\Handl_Weekly_Snapshot_Manager() )->register();
+
+require_once "includes/mcp-loader.php";
 
 $handl_onboarding_manager = new Handl_Onboarding_Manager( $handl_integrations_manager );
 $handl_onboarding_manager->register_capture_listener();

@@ -3,7 +3,7 @@ Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
 Tested up to: 7.0
-Stable tag: 2.9.13
+Stable tag: 2.9.14
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -96,6 +96,10 @@ Upgrade to unlock the full attribution stack and advanced controls:
 
 **SPECIAL THANKS:** This plugin has been tested on various operating systems and browsers thanks to <a href='https://www.browserstack.com'>BrowserStack!</a>
 
+= External services =
+
+Optional features such as the MCP connection and the Weekly Snapshot connect to UTM Grabber's own service (utmgrabber.com). Nothing is sent until you turn a feature on. MCP shares your site URL and email to create the connection, then reads report data from your site over HMAC signed requests only when your AI asks for it. The free service has fair use limits. Terms: https://utmgrabber.com/terms/ Privacy: https://utmgrabber.com/privacy-policy/
+
 == Installation ==
 
 1. Upload `handl-utm-grabber` to the `/wp-content/plugins/` directory (or install from WordPress Plugins).
@@ -147,6 +151,9 @@ Yes. The free plugin can wait for marketing consent through WP Consent API and a
 17. Zapier — configure the webhook URL in HandL Options
 
 == Changelog ==
+= 2.9.14 =
+* New: MCP connection. Ask Claude, Cursor, or any MCP client about your leads and turn your UTM data into reports
+
 = 2.9.13 =
 * Improved: Switching between this plugin and UTM Grabber V3 now hands over cleanly
 * Fix: Weekly Snapshot email layout on mobile

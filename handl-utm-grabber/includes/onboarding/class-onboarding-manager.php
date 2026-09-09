@@ -441,8 +441,12 @@ class Handl_Onboarding_Manager {
 	 * silent-register signup plus the site-metadata sync. Responses are
 	 * deliberately not read; an opt-in must never wait on the ~10s signup
 	 * roundtrip or fail because of it.
+	 *
+	 * @param string $email          Recipient email.
+	 * @param string $source         signup_source sent to silent-register.
+	 * @param array  $extra_metadata Extra fields merged into the metadata body.
 	 */
-	public static function enroll( $email ) {
+	public static function enroll( $email, $source = self::SIGNUP_SOURCE, $extra_metadata = array() ) {
 		if ( ! is_email( $email ) ) {
 			return;
 		}
@@ -465,10 +469,11 @@ class Handl_Onboarding_Manager {
 
 		$post( self::SIGNUP_ENDPOINT, array(
 			'email'         => $email,
-			'signup_source' => self::SIGNUP_SOURCE,
+			'signup_source' => $source,
 		) );
 		$post( self::METADATA_ENDPOINT, array_merge(
 			array( 'email' => $email ),
+			$extra_metadata,
 			$manager->metadata_context()
 		) );
 	}
