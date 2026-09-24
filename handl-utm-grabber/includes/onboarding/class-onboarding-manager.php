@@ -11,6 +11,9 @@ require_once __DIR__ . '/integrations/class-gravity-forms-onboarding.php';
 require_once __DIR__ . '/integrations/class-contact-form-7-onboarding.php';
 require_once __DIR__ . '/integrations/class-ninja-forms-onboarding.php';
 require_once __DIR__ . '/integrations/class-elementor-onboarding.php';
+require_once __DIR__ . '/integrations/class-wpforms-onboarding.php';
+require_once __DIR__ . '/integrations/class-fluent-forms-onboarding.php';
+require_once __DIR__ . '/integrations/class-formidable-onboarding.php';
 
 class Handl_Onboarding_Manager {
 
@@ -56,6 +59,9 @@ class Handl_Onboarding_Manager {
 			new Contact_Form_7_Onboarding(),
 			new Ninja_Forms_Onboarding(),
 			new Elementor_Onboarding(),
+			new WPForms_Onboarding(),
+			new Fluent_Forms_Onboarding(),
+			new Formidable_Onboarding(),
 		);
 		foreach ( $classes as $cls ) {
 			$this->onboarding_integrations[ $cls->get_slug() ] = $cls;

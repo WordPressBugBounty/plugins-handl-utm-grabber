@@ -27,5 +27,14 @@ class Handl_Tracking_Doctor_Manager {
 
 	public function register() {
 		( new Handl_Tracking_Doctor_Ajax( $this->integrations_manager ) )->register();
+		add_action( 'handl_consent_settings_saved', array( $this, 'recheck_consent' ) );
+	}
+
+	/** Saving GDPR settings changes the consent verdict; merge a fresh check into the saved scan. */
+	public function recheck_consent() {
+		$provider = new Handl_Tracking_Doctor_Provider( new Handl_Tracking_Doctor_Audit( $this->integrations_manager ) );
+		if ( $provider->last_scan() !== null ) {
+			$provider->recheck( 'consent' );
+		}
 	}
 }

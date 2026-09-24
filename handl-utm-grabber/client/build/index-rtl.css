@@ -654,6 +654,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .relative {
   position: relative;
 }
+#handl-react-root .sticky {
+  position: sticky;
+}
 #handl-react-root .inset-0 {
   inset: 0px;
 }
@@ -711,6 +714,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .top-4 {
   top: 1rem;
+}
+#handl-react-root .top-8 {
+  top: 2rem;
 }
 #handl-react-root .top-\[50\%\] {
   top: 50%;
@@ -919,6 +925,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .h-2\.5 {
   height: 0.625rem;
 }
+#handl-react-root .h-20 {
+  height: 5rem;
+}
 #handl-react-root .h-24 {
   height: 6rem;
 }
@@ -1009,6 +1018,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .max-h-64 {
   max-height: 16rem;
 }
+#handl-react-root .max-h-72 {
+  max-height: 18rem;
+}
 #handl-react-root .max-h-96 {
   max-height: 24rem;
 }
@@ -1026,6 +1038,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .min-h-\[100px\] {
   min-height: 100px;
+}
+#handl-react-root .min-h-\[80px\] {
+  min-height: 80px;
 }
 #handl-react-root .w-0 {
   width: 0px;
@@ -1048,6 +1063,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .w-11 {
   width: 2.75rem;
 }
+#handl-react-root .w-11\/12 {
+  width: 91.666667%;
+}
 #handl-react-root .w-14 {
   width: 3.5rem;
 }
@@ -1063,6 +1081,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .w-2\/3 {
   width: 66.666667%;
 }
+#handl-react-root .w-2\/5 {
+  width: 40%;
+}
 #handl-react-root .w-24 {
   width: 6rem;
 }
@@ -1074,6 +1095,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .w-3\/4 {
   width: 75%;
+}
+#handl-react-root .w-3\/5 {
+  width: 60%;
 }
 #handl-react-root .w-32 {
   width: 8rem;
@@ -1217,6 +1241,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .max-w-5xl {
   max-width: 64rem;
 }
+#handl-react-root .max-w-6xl {
+  max-width: 72rem;
+}
 #handl-react-root .max-w-\[1120px\] {
   max-width: 1120px;
 }
@@ -1283,6 +1310,14 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .-translate-y-1\/2 {
   --tw-translate-y: -50%;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+#handl-react-root .translate-x-0 {
+  --tw-translate-x: 0px;
+  transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
+}
+#handl-react-root .translate-x-4 {
+  --tw-translate-x: 1rem;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
 }
 #handl-react-root .translate-x-\[-50\%\] {
@@ -1713,10 +1748,6 @@ video:where(#handl-react-root,#handl-react-root *) {
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
 }
-#handl-react-root .border-gray-300 {
-  --tw-border-opacity: 1;
-  border-color: rgb(209 213 219 / var(--tw-border-opacity, 1));
-}
 #handl-react-root .border-green-200 {
   --tw-border-opacity: 1;
   border-color: rgb(187 247 208 / var(--tw-border-opacity, 1));
@@ -1870,9 +1901,11 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .bg-foreground {
   background-color: hsl(var(--foreground));
 }
-#handl-react-root .bg-gray-400 {
-  --tw-bg-opacity: 1;
-  background-color: rgb(156 163 175 / var(--tw-bg-opacity, 1));
+#handl-react-root .bg-foreground\/10 {
+  background-color: hsl(var(--foreground) / 0.1);
+}
+#handl-react-root .bg-foreground\/15 {
+  background-color: hsl(var(--foreground) / 0.15);
 }
 #handl-react-root .bg-gray-50 {
   --tw-bg-opacity: 1;
@@ -1892,6 +1925,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .bg-green-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(34 197 94 / var(--tw-bg-opacity, 1));
+}
+#handl-react-root .bg-input {
+  background-color: hsl(var(--input));
 }
 #handl-react-root .bg-muted {
   background-color: hsl(var(--muted));
@@ -2012,6 +2048,11 @@ video:where(#handl-react-root,#handl-react-root *) {
   --tw-gradient-to: rgb(236 253 245 / 0) var(--tw-gradient-to-position);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
+#handl-react-root .from-muted\/60 {
+  --tw-gradient-from: hsl(var(--muted) / 0.6) var(--tw-gradient-from-position);
+  --tw-gradient-to: hsl(var(--muted) / 0) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
 #handl-react-root .from-primary {
   --tw-gradient-from: hsl(var(--primary)) var(--tw-gradient-from-position);
   --tw-gradient-to: hsl(var(--primary) / 0) var(--tw-gradient-to-position);
@@ -2063,6 +2104,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .to-indigo-600 {
   --tw-gradient-to: #4f46e5 var(--tw-gradient-to-position);
 }
+#handl-react-root .to-muted {
+  --tw-gradient-to: hsl(var(--muted)) var(--tw-gradient-to-position);
+}
 #handl-react-root .to-primary\/10 {
   --tw-gradient-to: hsl(var(--primary) / 0.1) var(--tw-gradient-to-position);
 }
@@ -2094,6 +2138,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .p-0 {
   padding: 0px;
+}
+#handl-react-root .p-0\.5 {
+  padding: 0.125rem;
 }
 #handl-react-root .p-1 {
   padding: 0.25rem;
@@ -2161,6 +2208,10 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .px-8 {
   padding-right: 2rem;
   padding-left: 2rem;
+}
+#handl-react-root .py-0 {
+  padding-top: 0px;
+  padding-bottom: 0px;
 }
 #handl-react-root .py-0\.5 {
   padding-top: 0.125rem;
@@ -2486,6 +2537,10 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 #handl-react-root .tracking-widest {
   letter-spacing: 0.1em;
+}
+#handl-react-root .\!text-amber-600 {
+  --tw-text-opacity: 1 !important;
+  color: rgb(217 119 6 / var(--tw-text-opacity, 1)) !important;
 }
 #handl-react-root .text-\[\#7DD3FC\] {
   --tw-text-opacity: 1;
@@ -3121,6 +3176,9 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .focus-visible\:ring-offset-2:focus-visible {
   --tw-ring-offset-width: 2px;
 }
+#handl-react-root .focus-visible\:ring-offset-background:focus-visible {
+  --tw-ring-offset-color: hsl(var(--background));
+}
 #handl-react-root .disabled\:pointer-events-none:disabled {
   pointer-events: none;
 }
@@ -3314,11 +3372,18 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .data-\[state\=open\]\:slide-in-from-top-\[48\%\][data-state="open"] {
   --tw-enter-translate-y: -48%;
 }
+#handl-react-root .dark\:border-amber-700:is(.dark *) {
+  --tw-border-opacity: 1;
+  border-color: rgb(180 83 9 / var(--tw-border-opacity, 1));
+}
 #handl-react-root .dark\:border-destructive:is(.dark *) {
   border-color: hsl(var(--destructive));
 }
 #handl-react-root .dark\:bg-amber-950\/20:is(.dark *) {
   background-color: rgb(69 26 3 / 0.2);
+}
+#handl-react-root .dark\:bg-amber-950\/40:is(.dark *) {
+  background-color: rgb(69 26 3 / 0.4);
 }
 #handl-react-root .dark\:bg-green-950:is(.dark *) {
   --tw-bg-opacity: 1;
@@ -3333,6 +3398,10 @@ video:where(#handl-react-root,#handl-react-root *) {
 #handl-react-root .dark\:bg-red-950:is(.dark *) {
   --tw-bg-opacity: 1;
   background-color: rgb(69 10 10 / var(--tw-bg-opacity, 1));
+}
+#handl-react-root .dark\:text-amber-200:is(.dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(253 230 138 / var(--tw-text-opacity, 1));
 }
 #handl-react-root .dark\:text-amber-400:is(.dark *) {
   --tw-text-opacity: 1;
@@ -3506,10 +3575,6 @@ video:where(#handl-react-root,#handl-react-root *) {
 }
 @media (min-width: 768px) {
 
-  #handl-react-root .md\:col-span-2 {
-    grid-column: span 2 / span 2;
-  }
-
   #handl-react-root .md\:w-auto {
     width: auto;
   }
@@ -3574,6 +3639,20 @@ video:where(#handl-react-root,#handl-react-root *) {
   #handl-react-root .lg\:text-8xl {
     font-size: 6rem;
     line-height: 1;
+  }
+}
+@media (min-width: 1280px) {
+
+  #handl-react-root .xl\:col-span-2 {
+    grid-column: span 2 / span 2;
+  }
+
+  #handl-react-root .xl\:col-span-3 {
+    grid-column: span 3 / span 3;
+  }
+
+  #handl-react-root .xl\:grid-cols-5 {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 #handl-react-root .\[\&\:has\(\>\.day-range-end\)\]\:rounded-r-md:has(>.day-range-end) {

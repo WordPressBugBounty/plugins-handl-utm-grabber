@@ -8,6 +8,9 @@ require_once __DIR__ . '/integrations/class-gravity-forms-submission-listener.ph
 require_once __DIR__ . '/integrations/class-contact-form-7-submission-listener.php';
 require_once __DIR__ . '/integrations/class-ninja-forms-submission-listener.php';
 require_once __DIR__ . '/integrations/class-elementor-submission-listener.php';
+require_once __DIR__ . '/integrations/class-wpforms-submission-listener.php';
+require_once __DIR__ . '/integrations/class-fluent-forms-submission-listener.php';
+require_once __DIR__ . '/integrations/class-formidable-submission-listener.php';
 
 /**
  * Boots every per-plugin submission listener. Each listener emits the shared
@@ -27,6 +30,9 @@ class Handl_Submissions_Manager {
 			new Contact_Form_7_Submission_Listener(),
 			new Ninja_Forms_Submission_Listener(),
 			new Elementor_Submission_Listener(),
+			new WPForms_Submission_Listener(),
+			new Fluent_Forms_Submission_Listener(),
+			new Formidable_Submission_Listener(),
 		);
 	}
 

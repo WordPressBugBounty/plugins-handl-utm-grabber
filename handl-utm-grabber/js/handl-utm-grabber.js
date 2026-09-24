@@ -89,18 +89,43 @@ function HandLAppendTrackedLinks(){
     });
 }
 
-// WP Consent API
-document.addEventListener('wp_listen_for_consent_change', function (e) {
-    var changedConsentCategory = e.detail;
+// Marketing consent granted -> capture; withdrawn -> clean up. No reload.
+function HandLOnMarketingConsentChange(changedConsentCategory) {
     for (var key in changedConsentCategory) {
         if (changedConsentCategory.hasOwnProperty(key)) {
             if (key === 'marketing' && changedConsentCategory[key] === 'allow') {
-                console.log('WP Consent API: Marketing consent granted, running HandL');
+                console.log('Consent: Marketing consent granted, running HandL');
                 RunHandL();
+            } else if (key === 'marketing' && changedConsentCategory[key] === 'deny') {
+                console.log('Consent: Marketing consent withdrawn, removing HandL cookies');
+                RemoveHandLCookies();
             }
         }
     }
+}
+
+// WP Consent API broadcasts (any consent manager, incl. our banner in manager mode).
+document.addEventListener('wp_listen_for_consent_change', function (e) {
+    HandLOnMarketingConsentChange(e.detail);
 });
+
+// Our banner's own event, standalone mode.
+document.addEventListener('handl_consent_change', function (e) {
+    HandLOnMarketingConsentChange(e.detail);
+});
+
+// Server-side cookies carry a leading-dot domain, JS-set ones none; clear every variant.
+function RemoveHandLCookies() {
+    console.log('Removing HandL cookies');
+    var params = typeof handl_utm_all_params !== 'undefined' ? Object.values(handl_utm_all_params) : []
+    var host = location.hostname.toLowerCase().replace(/^www\./, '')
+    params.forEach(function (param) {
+        Cookies.remove(param, { path: '/' })
+        Cookies.remove(param, { path: '/', domain: '.' + host })
+        Cookies.remove(param, { path: '/', domain: host })
+    })
+    handlConsentGranted = false
+}
 
 function RunFieldFiller(){
     jQuery.each([ 'utm_source','utm_medium','utm_term', 'utm_content', 'utm_campaign', 'gclid', 'handl_landing_page', 'handl_original_ref', 'handl_ip', 'handl_ref', 'handl_url', 'email', 'username' ], function( i,v ) {

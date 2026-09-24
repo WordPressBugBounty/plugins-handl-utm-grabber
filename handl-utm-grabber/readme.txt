@@ -3,7 +3,7 @@ Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
 Tested up to: 7.0
-Stable tag: 2.9.14
+Stable tag: 2.9.15
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -104,7 +104,7 @@ Optional features such as the MCP connection and the Weekly Snapshot connect to 
 
 1. Upload `handl-utm-grabber` to the `/wp-content/plugins/` directory (or install from WordPress Plugins).
 2. Activate the plugin through the `Plugins` menu in WordPress.
-3. Add hidden fields/shortcodes to your forms (Contact Form 7, Gravity Forms, Ninja Forms, Elementor, etc.).
+3. Connect your forms with one click from the Integrations page (Contact Form 7, Gravity Forms, Ninja Forms, Elementor, WPForms, Fluent Forms, Formidable Forms), or add hidden fields/shortcodes manually.
 4. Submit a test lead with UTM parameters and confirm values are captured correctly.
 
 == Frequently Asked Questions ==
@@ -137,7 +137,7 @@ Yes. The free plugin can wait for marketing consent through WP Consent API and a
 3. Campaign Insights — source performance and recommended next steps
 4. Custom Fields — map core UTM and conversion-context attribution fields
 5. Settings — first-party tracking controls and quality checks
-6. AI-Powered Lead Insights — dashboard widget and form entry insights for Contact Form 7, Gravity Forms, Ninja Forms & Elementor
+6. AI-Powered Lead Insights — dashboard widget and form entry insights for Contact Form 7, Gravity Forms, Ninja Forms, Elementor, WPForms, Fluent Forms and Formidable Forms
 7. HandL UTM Grabber installed and active in the WordPress Plugins screen
 8. Gravity Forms — hidden field dynamically populated with utm_campaign
 9. Salesforce — map Source__c to the [utm_source] shortcode
@@ -151,6 +151,16 @@ Yes. The free plugin can wait for marketing consent through WP Consent API and a
 17. Zapier — configure the webhook URL in HandL Options
 
 == Changelog ==
+= 2.9.15 =
+* New: One click setup for WPForms, Fluent Forms and Formidable Forms. Connect your forms from the Integrations page and the tracking fields are added for you
+* New: Lead insights for WPForms, Fluent Forms and Formidable Forms entries, with the attribution summary right on the entry screen
+* New: Zapier webhook support for WPForms, Fluent Forms and Formidable Forms submissions
+* New: MCP reports now include WPForms, Fluent Forms and Formidable Forms entries
+* New: Built in consent banner. Turn it on from the GDPR tab, pick a position and theme, and no attribution cookies are written until visitors accept
+* New: Act as a consent tool. With the WP Consent API plugin installed, the banner can broadcast visitor choices to every consent aware plugin on your site
+* New: Cookie declaration shortcode and one click publishing of your cookie list to the privacy policy page
+* Improved: Withdrawing marketing consent now removes the attribution cookies right away
+
 = 2.9.14 =
 * New: MCP connection. Ask Claude, Cursor, or any MCP client about your leads and turn your UTM data into reports
 

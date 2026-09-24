@@ -138,6 +138,9 @@ class Handl_Insights_Ajax {
 			'ninja-forms'    => 'Ninja Forms',
 			'contact-form-7' => 'Contact Form 7',
 			'elementor'      => 'Elementor',
+			'wpforms'        => 'WPForms',
+			'fluent-forms'   => 'Fluent Forms',
+			'formidable'     => 'Formidable Forms',
 		);
 		return isset( $labels[ $slug ] ) ? $labels[ $slug ] : ucwords( str_replace( '-', ' ', (string) $slug ) );
 	}
@@ -155,6 +158,15 @@ class Handl_Insights_Ajax {
 		// Deep-links to the submission when its id was captured; list page otherwise.
 		if ( 'elementor' === $slug ) {
 			return $has_submission ? 'View submission' : 'View submissions';
+		}
+		if ( 'wpforms' === $slug ) {
+			return $has_submission ? 'View entry' : 'View entries';
+		}
+		if ( 'fluent-forms' === $slug ) {
+			return $has_submission ? 'View entry' : 'View entries';
+		}
+		if ( 'formidable' === $slug ) {
+			return $has_submission ? 'View entry' : 'View entries';
 		}
 		return 'View';
 	}

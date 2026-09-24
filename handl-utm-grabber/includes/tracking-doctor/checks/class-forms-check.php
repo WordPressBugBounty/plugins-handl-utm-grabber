@@ -64,7 +64,7 @@ class Forms_Check extends Handl_Doctor_Check {
 		if ( empty( $integrations ) ) {
 			return $this->build_check(
 				'warn',
-				'No supported form plugins are active (Contact Form 7, Gravity Forms, Ninja Forms, or Elementor).',
+				'No supported form plugins are active (Contact Form 7, Gravity Forms, Ninja Forms, Elementor, WPForms, Fluent Forms, or Formidable Forms).',
 				$detailed,
 				array(
 					'label' => 'Set up form tracking',
@@ -211,12 +211,18 @@ class Forms_Check extends Handl_Doctor_Check {
 			require_once $base . '/contact-form-7/class-contact-form-7-integration.php';
 			require_once $base . '/ninja-forms/class-ninja-forms-integration.php';
 			require_once $base . '/elementor/class-elementor-integration.php';
+			require_once $base . '/wpforms/class-wpforms-integration.php';
+			require_once $base . '/fluent-forms/class-fluent-forms-integration.php';
+			require_once $base . '/formidable/class-formidable-integration.php';
 
 			$this->integrations = array(
 				'gravity-forms'  => new \Handl\UtmrabberFree\Integrations\Gravity_Forms_Integration(),
 				'contact-form-7' => new \Handl\UtmrabberFree\Integrations\Contact_Form_7_Integration(),
 				'ninja-forms'    => new \Handl\UtmrabberFree\Integrations\Ninja_Forms_Integration(),
 				'elementor'      => new \Handl\UtmrabberFree\Integrations\Elementor_Integration(),
+				'wpforms'        => new \Handl\UtmrabberFree\Integrations\WPForms_Integration(),
+				'fluent-forms'   => new \Handl\UtmrabberFree\Integrations\Fluent_Forms_Integration(),
+				'formidable'     => new \Handl\UtmrabberFree\Integrations\Formidable_Integration(),
 			);
 		}
 
@@ -247,6 +253,12 @@ class Forms_Check extends Handl_Doctor_Check {
 				return $param . ' (field key)';
 			case 'elementor':
 				return $param . ' (custom_id, hidden)';
+			case 'wpforms':
+				return '{handl_' . $param . '} (hidden field default)';
+			case 'fluent-forms':
+				return '{cookie.' . $param . '} (hidden field value)';
+			case 'formidable':
+				return $param . ' (field key, hidden)';
 			default:
 				return $param;
 		}
@@ -258,6 +270,9 @@ class Forms_Check extends Handl_Doctor_Check {
 			'gravity-forms'  => 'Hidden fields with inputName equal to the parameter key (e.g. utm_source)',
 			'ninja-forms'    => 'Hidden fields with key equal to the parameter, default {handl:param}',
 			'elementor'      => 'Hidden form fields with custom_id equal to the parameter key',
+			'wpforms'        => 'Hidden fields with default value {handl_param}',
+			'fluent-forms'   => 'Hidden fields with value {cookie.param}',
+			'formidable'     => 'Hidden fields with field key equal to the parameter (Formidable may append a number)',
 		);
 		return isset( $notes[ $slug ] ) ? $notes[ $slug ] : '';
 	}

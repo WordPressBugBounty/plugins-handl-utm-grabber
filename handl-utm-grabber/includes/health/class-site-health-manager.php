@@ -8,11 +8,17 @@ require_once dirname( __DIR__ ) . '/integrations/gravity-forms/class-gravity-for
 require_once dirname( __DIR__ ) . '/integrations/contact-form-7/class-contact-form-7-integration.php';
 require_once dirname( __DIR__ ) . '/integrations/ninja-forms/class-ninja-forms-integration.php';
 require_once dirname( __DIR__ ) . '/integrations/elementor/class-elementor-integration.php';
+require_once dirname( __DIR__ ) . '/integrations/wpforms/class-wpforms-integration.php';
+require_once dirname( __DIR__ ) . '/integrations/fluent-forms/class-fluent-forms-integration.php';
+require_once dirname( __DIR__ ) . '/integrations/formidable/class-formidable-integration.php';
 
 use Handl\UtmrabberFree\Integrations\Gravity_Forms_Integration;
 use Handl\UtmrabberFree\Integrations\Contact_Form_7_Integration;
 use Handl\UtmrabberFree\Integrations\Ninja_Forms_Integration;
 use Handl\UtmrabberFree\Integrations\Elementor_Integration;
+use Handl\UtmrabberFree\Integrations\WPForms_Integration;
+use Handl\UtmrabberFree\Integrations\Fluent_Forms_Integration;
+use Handl\UtmrabberFree\Integrations\Formidable_Integration;
 
 // Registers Site Health tests; owns form integration instances for safe `direct` tests during cron, without relying on the admin-only integrations manager.
 class Handl_Site_Health_Manager {
@@ -32,6 +38,9 @@ class Handl_Site_Health_Manager {
 				'gravity-forms'  => new Gravity_Forms_Integration(),
 				'ninja-forms'    => new Ninja_Forms_Integration(),
 				'elementor'      => new Elementor_Integration(),
+				'wpforms'        => new WPForms_Integration(),
+				'fluent-forms'   => new Fluent_Forms_Integration(),
+				'formidable'     => new Formidable_Integration(),
 			);
 		}
 		return $this->integrations;
@@ -145,7 +154,7 @@ class Handl_Site_Health_Manager {
 	private function form_tests_config() {
 		return array(
 			'contact-form-7' => array(
-				'label'           => 'Are your capturing/tracking UTMs properly in your Contact Form 7?',
+				'label'           => 'Are you capturing/tracking UTMs properly in your Contact Form 7?',
 				'positive'        => "<p>All of your Contact Form 7 set up properly. You are good to go!</p>",
 				'negative_intro'  => "<p>Your Contact Form 7 forms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>",
 				'positive_action' => 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_cf7&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
@@ -153,7 +162,7 @@ class Handl_Site_Health_Manager {
 				'test'            => 'handl_cf7_shortcodes_used',
 			),
 			'gravity-forms' => array(
-				'label'           => 'Are your capturing/tracking UTMs properly in your Gravity Form?',
+				'label'           => 'Are you capturing/tracking UTMs properly in your Gravity Form?',
 				'positive'        => "<p>All of your Gravity forms set up properly. You are good to go!</p>",
 				'negative_intro'  => "<p>Your Gravity forms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>",
 				'positive_action' => 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_gf&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
@@ -161,7 +170,7 @@ class Handl_Site_Health_Manager {
 				'test'            => 'handl_gf_shortcodes_used',
 			),
 			'ninja-forms' => array(
-				'label'           => 'Are your capturing/tracking UTMs properly in your Ninja Form?',
+				'label'           => 'Are you capturing/tracking UTMs properly in your Ninja Form?',
 				'positive'        => "<p>All of your Ninja Forms set up properly. You are good to go!</p>",
 				'negative_intro'  => "<p>Your Ninja forms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>",
 				'positive_action' => 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_nf&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
@@ -169,12 +178,36 @@ class Handl_Site_Health_Manager {
 				'test'            => 'handl_nf_shortcodes_used',
 			),
 			'elementor' => array(
-				'label'           => 'Are your capturing/tracking UTMs properly in your Elementor forms?',
+				'label'           => 'Are you capturing/tracking UTMs properly in your Elementor forms?',
 				'positive'        => "<p>All of your Elementor forms set up properly. You are good to go!</p>",
 				'negative_intro'  => "<p>Your Elementor forms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>",
 				'positive_action' => 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_elementor&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
 				'negative_action' => '<a href="https://docs.utmgrabber.com/books/elementor-integration/page/native-elementor-form-support?utm_campaign=utm_proper_elementor&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to learn the best practice of collecting UTM parameters in Elementor <span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
 				'test'            => 'handl_elementor_shortcodes_used',
+			),
+			'wpforms' => array(
+				'label'           => 'Are you capturing/tracking UTMs properly in your WPForms?',
+				'positive'        => "<p>All of your WPForms set up properly. You are good to go!</p>",
+				'negative_intro'  => "<p>Your WPForms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>",
+				'positive_action' => 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_wpforms&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
+				'negative_action' => '<a href="https://docs.utmgrabber.com/books/wp-forms-integration/page/wpforms-integration?utm_campaign=utm_proper_wpforms&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to learn the best practice of collecting UTM parameters in WPForms <span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
+				'test'            => 'handl_wpforms_shortcodes_used',
+			),
+			'fluent-forms' => array(
+				'label'           => 'Are you capturing/tracking UTMs properly in your Fluent Forms?',
+				'positive'        => "<p>All of your Fluent Forms set up properly. You are good to go!</p>",
+				'negative_intro'  => "<p>Your Fluent Forms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>",
+				'positive_action' => 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_fluent&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
+				'negative_action' => '<a href="https://docs.utmgrabber.com/books/wp-fluent-forms-integration/page/fluent-forms-utm-tracking?utm_campaign=utm_proper_fluent&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to learn the best practice of collecting UTM parameters in Fluent Forms <span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
+				'test'            => 'handl_fluent_forms_shortcodes_used',
+			),
+			'formidable' => array(
+				'label'           => 'Are you capturing/tracking UTMs properly in your Formidable Forms?',
+				'positive'        => "<p>All of your Formidable Forms set up properly. You are good to go!</p>",
+				'negative_intro'  => "<p>Your Formidable Forms are not capturing all the UTMs recommended. See the list of forms below having problems and resolve to make sure you do not miss any data</p>",
+				'positive_action' => 'You want to up your game? <a href="https://docs.utmgrabber.com/books/101-getting-started-for-handl-utm-grabber-v3/page/native-wp-shortcodes?utm_campaign=utm_proper_formidable&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to get the list of things you can track more <span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
+				'negative_action' => '<a href="https://docs.utmgrabber.com/books/formidable-forms-integration/page/formidable-form-integration?utm_campaign=utm_proper_formidable&utm_source=WordPress_FREE&utm_medium=health_check" target="_blank"> Click here to learn the best practice of collecting UTM parameters in Formidable Forms <span aria-hidden="true" class="dashicons dashicons-external"></span></a>',
+				'test'            => 'handl_formidable_shortcodes_used',
 			),
 		);
 	}

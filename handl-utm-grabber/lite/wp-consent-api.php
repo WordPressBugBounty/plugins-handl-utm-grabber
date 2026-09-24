@@ -37,6 +37,24 @@ if ( ! class_exists( 'HandL_WP_Consent_API' ) ) {
                 return; // WP Consent API not active
             }
 
+            // Register from the shared declaration so durations and purposes
+            // match the cookie list shown to visitors.
+            if ( class_exists( '\Handl\UtmrabberFree\Consent\Handl_Cookie_Declaration' ) ) {
+                foreach ( \Handl\UtmrabberFree\Consent\Handl_Cookie_Declaration::get_cookies() as $row ) {
+                    if ( $row['category'] !== 'marketing' ) {
+                        continue; // functional ones come from the consent module
+                    }
+                    wp_add_cookie_info(
+                        $row['name'],
+                        'HandL UTM Grabber',
+                        $row['category'],
+                        $row['duration'],
+                        $row['purpose']
+                    );
+                }
+                return;
+            }
+
             $fields = generateUTMFields();
             $duration_text = sprintf( __( '%d days' ), 30 );
 

@@ -8,6 +8,9 @@ require_once __DIR__ . '/gravity-forms/class-gravity-forms-integration.php';
 require_once __DIR__ . '/contact-form-7/class-contact-form-7-integration.php';
 require_once __DIR__ . '/ninja-forms/class-ninja-forms-integration.php';
 require_once __DIR__ . '/elementor/class-elementor-integration.php';
+require_once __DIR__ . '/wpforms/class-wpforms-integration.php';
+require_once __DIR__ . '/fluent-forms/class-fluent-forms-integration.php';
+require_once __DIR__ . '/formidable/class-formidable-integration.php';
 
 /** Registers integrations, AJAX handlers, and the React admin nonce. */
 class Handl_Integrations_Manager {
@@ -32,6 +35,9 @@ class Handl_Integrations_Manager {
 		$this->register( new Contact_Form_7_Integration() );
 		$this->register( new Ninja_Forms_Integration() );
 		$this->register( new Elementor_Integration() );
+		$this->register( new WPForms_Integration() );
+		$this->register( new Fluent_Forms_Integration() );
+		$this->register( new Formidable_Integration() );
 	}
 
 	private function register( Handl_Integration $integration ) {

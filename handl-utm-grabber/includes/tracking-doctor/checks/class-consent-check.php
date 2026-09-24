@@ -21,6 +21,7 @@ class Consent_Check extends Handl_Doctor_Check {
 		'borlabs'            => array( 'label' => 'Borlabs Cookie', 'plugins' => array( 'borlabs-cookie/borlabs-cookie.php' ), 'constant' => 'BORLABS_COOKIE_VERSION' ),
 		'ultimate_gdpr'      => array( 'label' => 'CT Ultimate GDPR & CCPA', 'plugins' => array( 'ct-ultimate-gdpr/ct-ultimate-gdpr.php' ), 'class' => 'CT_Ultimate_GDPR' ),
 		'wpconsent'          => array( 'label' => 'WPConsent', 'plugins' => array( 'wpconsent-cookies-banner-privacy-suite/wpconsent.php' ), 'constant' => 'WPCONSENT_VERSION' ),
+		'civic_cookie'       => array( 'label' => 'Civic Cookie Control', 'plugins' => array( 'cookie-control/cookie-control.php' ) ),
 		'wp_consent_api'     => array( 'label' => 'WP Consent API', 'plugins' => array( 'wp-consent-api/wp-consent-api.php' ) ),
 	);
 
@@ -33,11 +34,38 @@ class Consent_Check extends Handl_Doctor_Check {
 	}
 
 	public function scope_note() {
-		return 'ONLY review cookie-consent plugin compatibility with HandL. The free plugin can wait for marketing consent through the WP Consent API integration (Settings > GDPR); direct integrations with individual consent plugins are a premium HandL feature. When a consent plugin is detected, explain the risk: attribution may be lost or captured before consent. If the consent plugin supports the WP Consent API, recommend enabling HandL\'s free WP Consent API integration; otherwise recommend the premium upgrade. Do NOT invent free-plugin settings to change. Do NOT mention form hidden fields, form plugins, or WooCommerce order meta.';
+		return 'ONLY review cookie-consent plugin compatibility with HandL. The free plugin ships its own consent banner and can wait for marketing consent through the WP Consent API integration (both under Settings > GDPR); direct integrations with individual consent plugins are a premium HandL feature. When a consent plugin is detected, explain the risk: attribution may be lost or captured before consent. If the consent plugin supports the WP Consent API, recommend enabling HandL\'s free WP Consent API integration; otherwise recommend the premium upgrade. Do NOT invent free-plugin settings to change. Do NOT mention form hidden fields, form plugins, or WooCommerce order meta.';
 	}
 
 	public function run() {
 		$this->ensure_plugin_functions();
+
+		if ( class_exists( '\Handl\UtmrabberFree\Consent\Handl_Consent_Settings' )
+			&& \Handl\UtmrabberFree\Consent\Handl_Consent_Settings::is_banner_enabled() ) {
+			// Same double-banner situation the GDPR tab warns about: safe, but visitors see two prompts.
+			$other_banners = self::present_banner_plugin_labels();
+			if ( ! empty( $other_banners ) ) {
+				return $this->build_check(
+					'warn',
+					sprintf(
+						'Two consent banners are active. %s shows its own consent banner and the HandL banner is enabled too, so visitors will see both. Either disable the HandL banner and wait for consent through WP Consent API, or handle consent with HandL alone.',
+						implode( ', ', $other_banners )
+					),
+					array( 'handl_banner_enabled' => true, 'other_banners' => $other_banners ),
+					array(
+						'label' => 'Review consent settings',
+						'url'   => admin_url( 'admin.php?page=handl-utm-grabber.php#/gdpr' ),
+						'type'  => 'link',
+					)
+				);
+			}
+
+			return $this->build_check(
+				'pass',
+				'The HandL consent banner is enabled. Attribution cookies are only written after visitors accept.',
+				array( 'handl_banner_enabled' => true )
+			);
+		}
 
 		$detected = array();
 		foreach ( self::CONSENT_PLUGINS as $key => $meta ) {
@@ -122,8 +150,52 @@ class Consent_Check extends Handl_Doctor_Check {
 		);
 	}
 
+	/**
+	 * Labels of the banner-rendering consent plugins present on the site
+	 * (WP Consent API is headless and never listed). Shared with the consent
+	 * module's double-banner warning.
+	 *
+	 * @return string[]
+	 */
+	public static function present_banner_plugin_labels() {
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		return array_values( self::present_banner_plugins() );
+	}
+
+	/** Every banner plugin in the table as key => label (WP Consent API is headless). @return array<string, string> */
+	public static function supported_banner_plugins() {
+		$all = array();
+		foreach ( self::CONSENT_PLUGINS as $key => $meta ) {
+			if ( $key !== 'wp_consent_api' ) {
+				$all[ $key ] = $meta['label'];
+			}
+		}
+		return $all;
+	}
+
+	/** Detected banner plugins as key => label. @return array<string, string> */
+	public static function present_banner_plugins() {
+		if ( ! function_exists( 'is_plugin_active' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		$found = array();
+		foreach ( self::CONSENT_PLUGINS as $key => $meta ) {
+			if ( $key !== 'wp_consent_api' && self::is_present( $meta ) ) {
+				$found[ $key ] = $meta['label'];
+			}
+		}
+		return $found;
+	}
+
 	/** @param array{plugins:string[],class?:string,constant?:string} $meta */
 	private function is_consent_plugin_present( $meta ) {
+		return self::is_present( $meta );
+	}
+
+	/** @param array{plugins:string[],class?:string,constant?:string} $meta */
+	private static function is_present( $meta ) {
 		foreach ( $meta['plugins'] as $basename ) {
 			if ( is_plugin_active( $basename ) ) {
 				return true;

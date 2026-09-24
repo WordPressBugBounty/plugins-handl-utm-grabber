@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.14
+ * Version: 2.9.15
  * Author URI: https://www.utmgrabber.com/
 */
 
@@ -166,6 +166,7 @@ function handl_utm_grabber_enqueue(){
 	wp_enqueue_script( 'js.cookie', plugins_url( '/js/js.cookie.js' , __FILE__ ), array( 'jquery' ), '3.0.5' );
 	wp_enqueue_script( 'handl-utm-grabber', plugins_url( '/js/handl-utm-grabber.js' , __FILE__ ), array( 'jquery','js.cookie' ), HANDL_UTM_GRABBER_FREE_VERSION );
 	wp_localize_script( 'handl-utm-grabber', 'handl_utm', HUGGenerateUTMsForURL() );
+	wp_localize_script( 'handl-utm-grabber', 'handl_utm_all_params', generateUTMFields() );
 	wp_localize_script( 'handl-utm-grabber', 'handl_utm_cookie_duration', array( 30, HandLCookieConsented() ) );
 }
 }
@@ -561,6 +562,7 @@ function handl_grab_related_plugins(){
         'Contact Form 7',
         'Ninja Forms',
         'Gravity Forms',
+        'Fluent Forms',
         'Formidable Forms',
         'Formidable Forms Pro',
         'Thrive Leads',
@@ -787,6 +789,8 @@ require_once "includes/weekly-snapshot/class-weekly-snapshot-manager.php";
 ( new \Handl\UtmrabberFree\WeeklySnapshot\Handl_Weekly_Snapshot_Manager() )->register();
 
 require_once "includes/mcp-loader.php";
+
+require_once "includes/consent-loader.php";
 
 $handl_onboarding_manager = new Handl_Onboarding_Manager( $handl_integrations_manager );
 $handl_onboarding_manager->register_capture_listener();

@@ -133,6 +133,23 @@ class Handl_Insight_Provider {
 			$url = admin_url( 'admin.php?page=e-form-submissions' );
 			return $sub_id ? $url . '#/' . rawurlencode( (string) $sub_id ) : $url;
 		}
+		if ( $slug === 'wpforms' && $form_id !== '' ) {
+			if ( $sub_id ) {
+				return admin_url( 'admin.php?page=wpforms-entries&view=details&entry_id=' . rawurlencode( (string) $sub_id ) );
+			}
+			return admin_url( 'admin.php?page=wpforms-entries&view=list&form_id=' . rawurlencode( $form_id ) );
+		}
+		// Fluent Forms' entries app routes the single entry via the hash.
+		if ( $slug === 'fluent-forms' && $form_id !== '' ) {
+			$url = admin_url( 'admin.php?page=fluent_forms&route=entries&form_id=' . rawurlencode( $form_id ) );
+			return $sub_id ? $url . '#/entries/' . rawurlencode( (string) $sub_id ) : $url;
+		}
+		if ( $slug === 'formidable' && $form_id !== '' ) {
+			if ( $sub_id ) {
+				return admin_url( 'admin.php?page=formidable-entries&frm_action=show&id=' . rawurlencode( (string) $sub_id ) );
+			}
+			return admin_url( 'admin.php?page=formidable-entries&form=' . rawurlencode( $form_id ) );
+		}
 		// CF7 has no native submission view; link to the form editor instead.
 		if ( $slug === 'contact-form-7' && $form_id !== '' ) {
 			return admin_url( 'admin.php?page=wpcf7&post=' . rawurlencode( $form_id ) . '&action=edit' );
@@ -186,6 +203,9 @@ class Handl_Insight_Provider {
 			'contact-form-7' => array( $base . '/contact-form-7/class-contact-form-7-integration.php', '\\Handl\\UtmrabberFree\\Integrations\\Contact_Form_7_Integration' ),
 			'ninja-forms'    => array( $base . '/ninja-forms/class-ninja-forms-integration.php',       '\\Handl\\UtmrabberFree\\Integrations\\Ninja_Forms_Integration' ),
 			'elementor'      => array( $base . '/elementor/class-elementor-integration.php',           '\\Handl\\UtmrabberFree\\Integrations\\Elementor_Integration' ),
+			'wpforms'        => array( $base . '/wpforms/class-wpforms-integration.php',               '\\Handl\\UtmrabberFree\\Integrations\\WPForms_Integration' ),
+			'fluent-forms'   => array( $base . '/fluent-forms/class-fluent-forms-integration.php',     '\\Handl\\UtmrabberFree\\Integrations\\Fluent_Forms_Integration' ),
+			'formidable'     => array( $base . '/formidable/class-formidable-integration.php',         '\\Handl\\UtmrabberFree\\Integrations\\Formidable_Integration' ),
 		);
 
 		if ( ! isset( $map[ $slug ] ) ) {

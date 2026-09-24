@@ -61,12 +61,42 @@ if ( ! function_exists( 'hug_frm_process_entry' ) ) {
 			$fields = FrmFieldsHelper::get_form_fields( $form->id, $errors );
 			$data   = array();
 			foreach ( $fields as $field ) {
-				$data[ $field->field_key ] = $_POST['item_meta'][ $field->id ];
+				$data[ $field->field_key ] = isset( $_POST['item_meta'][ $field->id ] ) ? $_POST['item_meta'][ $field->id ] : '';
 			}
 			SendDataToZapier( $zapier_url, $data );
 		}
 	}
-	//add_action( 'frm_process_entry', 'hug_frm_process_entry', 10, 4 );
+	add_action( 'frm_process_entry', 'hug_frm_process_entry', 10, 4 );
+}
+
+//WPForms Support
+if ( ! function_exists( 'hug_wpforms_process_complete' ) ) {
+	function hug_wpforms_process_complete( $fields, $entry, $form_data, $entry_id ) {
+		if ( $zapier_url = get_option( 'hug_zapier_url' ) ) {
+			$data = array();
+			foreach ( (array) $fields as $field ) {
+				if ( isset( $field['name'] ) ) {
+					$data[ $field['name'] ] = isset( $field['value'] ) ? $field['value'] : '';
+				}
+			}
+			$data['entry_id'] = $entry_id;
+			SendDataToZapier( $zapier_url, $data );
+		}
+	}
+	add_action( 'wpforms_process_complete', 'hug_wpforms_process_complete', 10, 4 );
+}
+
+//Fluent Forms Support
+if ( ! function_exists( 'hug_fluentform_submission_inserted' ) ) {
+	function hug_fluentform_submission_inserted( $insertId, $formData, $form ) {
+		if ( $zapier_url = get_option( 'hug_zapier_url' ) ) {
+			$data            = is_array( $formData ) ? $formData : array();
+			$data['form_id'] = $insertId;
+			SendDataToZapier( $zapier_url, $data );
+		}
+	}
+	// Underscore hook fires on every Fluent Forms version; the slash hook only from 5.0.
+	add_action( 'fluentform_submission_inserted', 'hug_fluentform_submission_inserted', 10, 3 );
 }
 
 if ( ! function_exists( 'SendDataToZapier' ) ) {
