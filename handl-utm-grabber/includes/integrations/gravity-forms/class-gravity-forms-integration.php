@@ -32,12 +32,16 @@ class Gravity_Forms_Integration extends Handl_Integration {
 			return array();
 		}
 
-		$forms = \GFAPI::get_forms();
-		$out   = array();
-		foreach ( $forms as $form ) {
+		global $wpdb;
+		// GFAPI::get_forms() loads every form's meta; only id/title are needed.
+		$table = \GFFormsModel::get_form_table_name();
+		$forms = $wpdb->get_results( "SELECT id, title FROM {$table} WHERE is_active = 1 AND is_trash = 0 ORDER BY id ASC" );
+
+		$out = array();
+		foreach ( (array) $forms as $form ) {
 			$out[] = array(
-				'id'    => (string) (int) $form['id'],
-				'title' => (string) $form['title'],
+				'id'    => (string) (int) $form->id,
+				'title' => (string) $form->title,
 			);
 		}
 		return $out;

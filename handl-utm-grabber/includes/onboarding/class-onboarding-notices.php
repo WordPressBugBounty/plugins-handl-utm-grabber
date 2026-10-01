@@ -62,8 +62,11 @@ class Handl_Onboarding_Notices {
 			'cooldown_days'   => 7,
 			'max_impressions' => 3,
 			'show_when'       => function () {
+				if ( ! $this->onboarding_open() ) {
+					return false;
+				}
 				$state = $this->integration_state();
-				return $this->onboarding_open() && $state['all_none'] && count( $state['qualifying'] ) === 1;
+				return $state['all_none'] && count( $state['qualifying'] ) === 1;
 			},
 			'render_callback' => function ( $id ) use ( $connect ) {
 				$state  = $this->integration_state();
@@ -86,9 +89,11 @@ class Handl_Onboarding_Notices {
 			'cooldown_days'   => 7,
 			'max_impressions' => 3,
 			'show_when'       => function () {
+				if ( ! $this->onboarding_open() ) {
+					return false;
+				}
 				$state = $this->integration_state();
-				return $this->onboarding_open() && ! empty( $state['qualifying'] )
-					&& ! $state['all_none'] && ! $state['all_complete'];
+				return ! empty( $state['qualifying'] ) && ! $state['all_none'] && ! $state['all_complete'];
 			},
 			'render_callback' => function ( $id ) use ( $connect ) {
 				$state = $this->integration_state();
@@ -113,9 +118,12 @@ class Handl_Onboarding_Notices {
 				array( 'label' => 'Connect my forms', 'url' => $connect, 'primary' => true ),
 			),
 			'show_when'       => function () {
+				if ( ! $this->onboarding_open() ) {
+					return false;
+				}
 				$state = $this->integration_state();
 				// Exactly one detected plugin belongs to onb-form-specific.
-				return $this->onboarding_open() && $state['all_none'] && count( $state['qualifying'] ) >= 2;
+				return $state['all_none'] && count( $state['qualifying'] ) >= 2;
 			},
 		) );
 
