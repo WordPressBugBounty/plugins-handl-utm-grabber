@@ -67,7 +67,10 @@ class Handl_Snapshot_Renderer {
 			// Stacked tiles carry their own margin, so the gutter cells would add stray rows.
 			. ' .gutter { display: none !important; }'
 			. ' .two-col { display: block !important; width: 100% !important; border-right: 0 !important; box-sizing: border-box !important; }'
-			. ' .gtile { display: block !important; width: 100% !important; box-sizing: border-box !important; }'
+			// stacked: drop the per-column side padding, or the 2nd and 3rd cards sit offset
+			. ' .gtile { display: block !important; width: 100% !important; box-sizing: border-box !important; padding: 0 0 10px 0 !important; }'
+			. ' .sp-img { padding-top: 18px !important; }'
+			. ' .sp-full { max-width: 100% !important; box-sizing: border-box !important; }'
 			// Card rows (demo, review) stack: ALL cells in the row must go block —
 			// a lone block td gets wrapped in an anonymous cell and keeps its slot.
 			. ' .stack { display: block !important; width: 100% !important; box-sizing: border-box !important; }'
@@ -127,11 +130,7 @@ class Handl_Snapshot_Renderer {
 		$sections[] = $this->doctor_section( $payload );
 
 		if ( $payload['doctor']['all_clear'] ) {
-			$sections[] = $this->support_card(
-				'Nothing to fix this week',
-				'Want a second set of eyes on your setup?',
-				'Your tracking is healthy, so this is the week to go further. A UTM Grabber developer will audit your whole setup, tighten your campaign tagging and make sure nothing slips through as you scale. One-time $299.'
-			);
+			$sections[] = $this->support_card( 'free-all-clear' );
 		}
 
 		$sections[] = $this->locked_panels( $is_store );
@@ -168,11 +167,7 @@ class Handl_Snapshot_Renderer {
 				'<p style="margin:26px 0 0 0;">' . $this->button( 'Open the Tracking Doctor', $payload['site']['manage_url'] ) . '</p>'
 				. '<p style="margin:14px 0 0 0; font-size:13px; color:' . self::MUTED . ';">We will keep watching. Your next Snapshot lands next week.</p>'
 			)
-			. $this->support_card(
-				'Rather have us do it',
-				'Let our team set it up for you',
-				'Not in the mood to troubleshoot? A UTM Grabber developer will get on your site, wire your forms, clear the caching issue and confirm tracking is live. One-time $299. You send us access, we hand it back working.'
-			)
+			. $this->support_card( 'free-zero-data' )
 			. $this->footer( $payload );
 	}
 
@@ -703,22 +698,46 @@ class Handl_Snapshot_Renderer {
 		);
 	}
 
-	private function support_card( $eyebrow, $heading, $body ) {
-		$url = add_query_arg(
-			array(
-				'utm_source'   => 'WordPress_FREE',
-				'utm_medium'   => 'weekly_email',
-				'utm_campaign' => 'weekly_snapshot_support',
-			),
-			'https://utmgrabber.com/support/'
+	private function support_card( $utm_content ) {
+		$points = array(
+			array( 'Expert setup.', 'Our team installs, wires, and live-tests every form.' ),
+			array( 'Diagnostics.', 'Caching, cookie, and GDPR leaks found and fixed.' ),
+			array( 'Automated custom reports.', 'Your own AI report builder, tuned to your business, ready to run.' ),
+			array( 'Priority support.', 'New funnels and forms wired for you, all year.' ),
 		);
+		$url = function ( $content ) {
+			return add_query_arg(
+				array(
+					'utm_source'   => 'WordPress_FREE',
+					'utm_medium'   => 'weekly_email',
+					'utm_campaign' => 'weekly_snapshot_support',
+					'utm_content'  => $content,
+				),
+				'https://utmgrabber.com/support/'
+			);
+		};
+
+		$list = '';
+		foreach ( $points as $i => $point ) {
+			$gap   = $i < count( $points ) - 1 ? '14px' : '0';
+			$list .= '<tr><td valign="top" style="padding:0 10px ' . $gap . ' 0;"><img src="' . esc_url( $this->img( 'circle-check-white.png' ) ) . '" width="17" height="17" alt="" style="display:block; border:0;"></td>'
+				. '<td style="padding-bottom:' . $gap . '; font-size:15px; line-height:1.5; color:#FFFFFF;"><b>' . $point[0] . '</b> <span style="color:#D6E6FA;">' . $point[1] . '</span></td></tr>';
+		}
 
 		return $this->row(
-			'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border:1px solid ' . self::BORDER . '; background:#F7F9FC; border-radius:10px;"><tr><td style="padding:22px 24px;">'
-			. '<p style="margin:0 0 6px 0; font-size:11px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:' . self::BLUE . ';">' . esc_html( $eyebrow ) . '</p>'
-			. '<p style="margin:0 0 8px 0; font-size:18px; font-weight:700; line-height:1.3;">' . esc_html( $heading ) . '</p>'
-			. '<p style="margin:0 0 16px 0; font-size:14.5px; color:' . self::BODY . '; line-height:1.6;">' . esc_html( $body ) . '</p>'
-			. '<a href="' . esc_url( $url ) . '" style="display:inline-block; background:' . self::INK . '; color:#fff; padding:12px 22px; border-radius:6px; text-decoration:none; font-weight:700; font-size:14.5px;">Get UTM Grabber support&nbsp;&rarr;</a>'
+			'<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:' . self::BLUE . '; border-radius:12px;"><tr><td style="padding:26px;">'
+			. '<p style="margin:0 0 6px 0; font-size:12px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:#D6E6FA;">If you&#8217;d rather not do it yourself</p>'
+			. '<p style="margin:0 0 18px 0; font-size:24px; font-weight:700; line-height:1.2; color:#FFFFFF;">We can set it all up for&nbsp;you</p>'
+			. '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:20px;"><tr>'
+			. '<td class="two-col" valign="middle" style="padding-right:16px;"><table role="presentation" cellpadding="0" cellspacing="0" border="0">' . $list . '</table></td>'
+			. '<td class="two-col sp-img" valign="top" width="212" style="width:39%;">'
+			. '<a href="' . esc_url( $url( $utm_content . '-img' ) ) . '" style="text-decoration:none;"><img class="sp-full" src="' . esc_url( $this->img( 'diagnostics-preview.png' ) ) . '" width="212" alt="Tracking scan results: a health score of 82 and a form tracking data leak flagged with a Fix this button. Sample data." style="display:block; width:100%; max-width:212px; height:auto; border:4px solid #FFFFFF; border-radius:8px;"></a>'
+			. '</td></tr></table>'
+			// background on the cell: Outlook ignores block display and padding on links
+			. '<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%"><tr><td align="center" bgcolor="#FFFFFF" style="background-color:#FFFFFF; border-radius:8px;">'
+			. '<a href="' . esc_url( $url( $utm_content ) ) . '" style="display:block; padding:15px 24px; color:' . self::BLUE . '; text-decoration:none; font-weight:700; font-size:16px;">See how we can&nbsp;help&nbsp;&rarr;</a>'
+			. '</td></tr></table>'
+			. '<p style="margin:12px 0 0 0; text-align:center; font-size:13px; color:#B9D6F5;">Works on the free plugin&nbsp;too.</p>'
 			. '</td></tr></table>',
 			'padding:24px 0 22px 0;'
 		);
