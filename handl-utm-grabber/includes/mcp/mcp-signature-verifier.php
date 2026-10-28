@@ -13,7 +13,7 @@ class Signature_Verifier
 {
     const OPTION_KEY = 'handl_mcp_credentials_free';
     const TIMESTAMP_TOLERANCE = 300;
-    const NONCE_TTL = 300;
+    const NONCE_TTL = 600;
 
     /**
      * Verify a signed MCP request. Intended for use as a WP REST permission_callback.
@@ -62,16 +62,6 @@ class Signature_Verifier
             );
         }
 
-        $nonce_key = 'utmg_nonce_' . hash('sha256', $nonce);
-        if (get_transient($nonce_key)) {
-            return new WP_Error(
-                'nonce_reused',
-                'Request nonce has already been used.',
-                array('status' => 401)
-            );
-        }
-        set_transient($nonce_key, true, self::NONCE_TTL);
-
         $method    = strtoupper($request->get_method());
         $path      = $request->get_route();
         $body      = $request->get_body();
@@ -96,6 +86,16 @@ class Signature_Verifier
                 array('status' => 401)
             );
         }
+
+        $nonce_key = 'utmg_nonce_' . hash('sha256', $nonce);
+        if (get_transient($nonce_key)) {
+            return new WP_Error(
+                'nonce_reused',
+                'Request nonce has already been used.',
+                array('status' => 401)
+            );
+        }
+        set_transient($nonce_key, true, self::NONCE_TTL);
 
         return true;
     }

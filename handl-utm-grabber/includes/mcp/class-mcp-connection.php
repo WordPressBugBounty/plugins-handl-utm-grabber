@@ -28,6 +28,7 @@ class McpConnection
         add_action('wp_ajax_handl_mcp_connect_site', array($this, 'ajaxConnectSite'));
         add_action('wp_ajax_handl_mcp_disconnect_site', array($this, 'ajaxDisconnectSite'));
         add_action('wp_ajax_handl_mcp_get_usage', array($this, 'ajaxGetUsage'));
+        add_filter('handl_react_admin_localize', array($this, 'addNonce'));
 
         // The SPA's hash routes are invisible to PHP, so ajaxGetStatus marks
         // the nudge seen instead of premium's watch().
@@ -50,6 +51,14 @@ class McpConnection
         return $props;
     }
 
+    public function addNonce($data) {
+        if (!isset($data['nonce']) || !is_array($data['nonce'])) {
+            $data['nonce'] = array();
+        }
+        $data['nonce']['mcp_nonce'] = wp_create_nonce('handl_mcp_connection');
+        return $data;
+    }
+
     private function buildMcpUrl($site_secret)
     {
         return self::MCP_BASE_URL . '/http/mcp/utmgrabber-report/free?access_code=' . $site_secret;
@@ -57,6 +66,7 @@ class McpConnection
 
     public function ajaxGetUsage()
     {
+        check_ajax_referer('handl_mcp_connection', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized access. Admin privileges required.');
             return;
@@ -101,6 +111,7 @@ class McpConnection
 
     public function ajaxGetStatus()
     {
+        check_ajax_referer('handl_mcp_connection', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized access. Admin privileges required.');
             return;
@@ -128,6 +139,7 @@ class McpConnection
 
     public function ajaxConnectSite()
     {
+        check_ajax_referer('handl_mcp_connection', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized access. Admin privileges required.');
             return;
@@ -226,6 +238,7 @@ class McpConnection
     }
     public function ajaxDisconnectSite()
     {
+        check_ajax_referer('handl_mcp_connection', 'nonce');
         if (!current_user_can('manage_options')) {
             wp_send_json_error('Unauthorized access. Admin privileges required.');
             return;

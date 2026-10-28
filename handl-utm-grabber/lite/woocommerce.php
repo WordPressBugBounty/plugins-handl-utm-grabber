@@ -22,10 +22,11 @@ if ( ! function_exists( 'HandLUTMGrabberWooCommerceUpdateOrderMeta' ) ) {
 
 		foreach ($fields as $field){
 			if (isset($_COOKIE[$field]) && $_COOKIE[$field] != ''){
+				$value = handl_sanitize_tracking_value( $_COOKIE[$field] );
 				if ( $order ) {
-					$order->update_meta_data( $field, esc_attr($_COOKIE[$field]) );
+					$order->update_meta_data( $field, $value );
 				} else {
-					update_post_meta( $order_id, $field, esc_attr($_COOKIE[$field]) );
+					update_post_meta( $order_id, $field, wp_slash( $value ) );
 				}
 			}
 		}

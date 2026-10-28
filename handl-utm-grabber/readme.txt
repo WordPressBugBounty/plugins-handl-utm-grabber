@@ -2,8 +2,8 @@
 Contributors: haktansuren
 Tags: utm,tracker,gclid,tracking,utm tracking,grabber,shortcodes,contact form 7,leads,collect,collect leads
 Requires at least: 3.6.0
-Tested up to: 7.0
-Stable tag: 2.9.17
+Tested up to: 7.1
+Stable tag: 2.9.18
 Requires PHP: 5.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -151,6 +151,11 @@ Yes. The free plugin can wait for marketing consent through WP Consent API and a
 17. Zapier — configure the webhook URL in HandL Options
 
 == Changelog ==
+= 2.9.18 =
+* Fix: Security fixes and improvements
+* Improved: More reliable tracking values in forms, links and WooCommerce orders
+* Improved: Append UTM now works on cached pages and covers more links on your site
+
 = 2.9.17 =
 * Fix: Minor Weekly Snapshot email fixes and improvements
 

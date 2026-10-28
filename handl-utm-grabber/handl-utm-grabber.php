@@ -5,7 +5,7 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  * Plugin Name: HandL UTM Grabber
  * Description: The easiest way to capture UTMs on your (optin) forms.
  * Author: Haktan Suren
- * Version: 2.9.17
+ * Version: 2.9.18
  * Author URI: https://www.utmgrabber.com/
 */
 
@@ -84,9 +84,9 @@ function CaptureUTMs(){
 	foreach ($fields as $id=>$field){
 		if (isset($_GET[$field]) && $_GET[$field] != '') {
 			// Sanitize input (sanitize early)
-			$cookie_field = sanitize_text_field($_GET[$field]);
+			$cookie_field = handl_sanitize_tracking_value($_GET[$field]);
 		} elseif(isset($_COOKIE[$field]) && $_COOKIE[$field] != ''){
-			$cookie_field = $_COOKIE[$field];
+			$cookie_field = wp_unslash($_COOKIE[$field]);
 		} else {
 			$cookie_field = '';
 		}
@@ -115,7 +115,7 @@ function CaptureUTMs(){
 			]);
 		}
 
-		$_COOKIE[$field] = $cookie_field;
+		$_COOKIE[$field] = wp_slash($cookie_field);
 
 		HandlCreateShortcode($field, $cookie_field);
 
@@ -141,8 +141,18 @@ if ( ! function_exists( 'HandlCreateShortcode' ) ) {
 			return esc_html($cookie_field);
 		});
 		add_shortcode($field."_i", function($atts, $content) use ($cookie_field) {
-			return sprintf($content, esc_html($cookie_field));
+			return handl_fill_shortcode_placeholder($content, esc_html($cookie_field));
 		});
+	}
+}
+
+if ( ! function_exists( 'handl_fill_shortcode_placeholder' ) ) {
+	// Replaces %s and %1$s with the value and %% with %; any other % stays as written.
+	function handl_fill_shortcode_placeholder($content, $value)
+	{
+		return preg_replace_callback('/%(%|1\$s|s)/', function ($m) use ($value) {
+			return $m[1] === '%' ? '%' : $value;
+		}, (string) $content);
 	}
 }
 
@@ -188,14 +198,6 @@ function handl_utm_grabber_enable_shortcode($val){
 }
 add_filter('salesforce_w2l_field_value', 'handl_utm_grabber_enable_shortcode');
 add_filter( 'wpcf7_form_elements', 'handl_utm_grabber_enable_shortcode' );
-
-function handl_utm_grabber_couponhunt_theme_support($value, $post_id, $field){
-	if ( get_option( 'hug_append_all' ) == 1 )
-		return add_query_arg( HUGGenerateUTMsForURL(), $value );
-	else
-		return $value;
-}
-add_filter( "acf/load_value/name=url", "handl_utm_grabber_couponhunt_theme_support", 10, 3);
 
 if ( ! function_exists( 'handl_utm_grabber_menu' ) ) {
 function handl_utm_grabber_menu() {
@@ -411,63 +413,13 @@ function handl_kb(){
 
 
 
-if ( ! function_exists( 'HUG_Append_All' ) ) {
-function HUG_Append_All($content) {
-  if ($content != '' && get_option('hug_append_all') == 1) {
-    if (!function_exists('str_get_html'))
-      require_once('simple_html_dom.php');
-    $html = str_get_html($content);
-
-    if (is_object($html)) {
-      $as = $html->find('a');
-      
-      foreach ($as as $a) {
-        $a_original = $a->href;
-
-        // Skip invalid/empty URLs
-        if ($a_original == '') continue;
-        if (preg_match('/javascript:void/',$a_original)) continue;
-        if (preg_match('/^#/',$a_original)) continue;
-        
-        // Only proceed if URL is valid (check before sanitization)
-        if (!filter_var($a_original, FILTER_VALIDATE_URL) && !preg_match('/^\//', $a_original)) {
-          continue;
-        }
-
-        // Use WordPress's add_query_arg which properly handles existing parameters
-        // and always uses & as separator. Don't use esc_url() as it can cause encoding issues.
-        $utm_params = HUGGenerateUTMsForURL();
-        
-        // add_query_arg will merge with existing params, overwriting matching keys
-        // and preserve non-matching params. It always uses & as separator.
-        $modified_url = add_query_arg($utm_params, $a_original);
-        
-        // Ensure no semicolons are present (safety check)
-        // Some HTML parsers might introduce semicolons, so normalize them
-        if (strpos($modified_url, '?') !== false) {
-          $url_parts = explode('?', $modified_url, 2);
-          if (isset($url_parts[1])) {
-            // Normalize any semicolons to ampersands in the query string
-            $query_part = str_replace(';', '&', $url_parts[1]);
-            $modified_url = $url_parts[0] . '?' . $query_part;
-          }
-        }
-        
-        // Directly modify the href attribute using DOM manipulation
-        // instead of regex replacement on raw HTML.
-        $a->href = $modified_url;
-      }
-      
-      // Return the properly escaped HTML from the DOM library
-      $content = $html->save();
-      $html->clear();
-      unset($html);
+//this will add the utm-out at the body level, so every link will pick up UTM appended
+add_filter('body_class', function( $classes ) {
+    if (get_option( 'hug_append_all' ) == 1){
+        $classes = array_merge( $classes, array( 'utm-out' ) );
     }
-  }
-  return $content;
-}
-}
-add_filter( 'the_content', 'HUG_Append_All', 999 );
+    return $classes;
+});
 
 function handl_utm_variables(){
     return array('utm_source','utm_medium','utm_term', 'utm_content', 'utm_campaign', 'gclid');
@@ -508,25 +460,11 @@ function HUGGenerateUTMsForURL(){
   $utms = array();
   foreach ($fields as $id=>$field){
     if (isset($_COOKIE[$field]) && $_COOKIE[$field] != '') {
-      // Sanitize for URL query parameters
-      $utms[$field] = esc_attr(sanitizeQueryArgs($_COOKIE[$field]));
+      $utms[$field] = wp_unslash($_COOKIE[$field]);
     }
   }
   return $utms;
 }
-}
-
-function sanitizeQueryArgs($cookie_str){
-//    var_dump($cookie_str);
-//    print "<br>";
-    // To be continued :)
-	$cookie_str = wp_strip_all_tags($cookie_str);
-	$cookie_str = preg_replace("/onactivate|onafterprint|onafterscriptexecute|onanimationcancel|onanimationend|onanimationiteration|onanimationstart|onauxclick|onbeforeactivate|onbeforecopy|onbeforecut|onbeforedeactivate|onbeforepaste|onbeforeprint|onbeforescriptexecute|onbeforeunload|onbegin|onblur|onbounce|oncanplay|oncanplaythrough|onchange|onclick|onclose|oncontextmenu|oncopy|oncuechange|oncut|ondblclick|ondeactivate|ondrag|ondragend|ondragenter|ondragleave|ondragover|ondragstart|ondrop|ondurationchange|onend|onended|onerror|onfinish|onfocus|onfocusin|onfocusout|onfullscreenchange|onhashchange|oninput|oninvalid|onkeydown|onkeypress|onkeyup|onload|onloadeddata|onloadedmetadata|onloadend|onloadstart|onmessage|onmousedown|onmouseenter|onmouseleave|onmousemove|onmouseout|onmouseover|onmouseup|onmousewheel|onmozfullscreenchange|onpagehide|onpageshow|onpaste|onpause|onplay|onplaying|onpointerdown|onpointerenter|onpointerleave|onpointermove|onpointerout|onpointerover|onpointerrawupdate|onpointerup|onpopstate|onprogress|onreadystatechange|onrepeat|onreset|onresize|onscroll|onsearch|onseeked|onseeking|onselect|onselectionchange|onselectstart|onshow|onstart|onsubmit|ontimeupdate|ontoggle|ontouchend|ontouchmove|ontouchstart|ontransitioncancel|ontransitionend|ontransitionrun|ontransitionstart|onunhandledrejection|onunload|onvolumechange|onwaiting|onwebkitanimationend|onwebkitanimationiteration|onwebkitanimationstart|onwebkittransitionend|onwheel/i","",$cookie_str);
-	$cookie_str = preg_replace("/\\\&quot;\s+/", '', $cookie_str);
-	$cookie_str = preg_replace("/\s+\\\&quot;/", '', $cookie_str);
-//    var_dump($cookie_str);
-//	print "<br>";
-	return $cookie_str;
 }
 
 //ConvertPlug UTM Support
@@ -534,16 +472,6 @@ function sanitizeQueryArgs($cookie_str){
 //	return do_shortcode($a);
 //}
 //add_filter('smile_render_setting', 'handl_utm_grabber_setting',10,1);
-
-if ( ! function_exists( 'handl_utm_nav_menu_link_attributes' ) ) {
-function handl_utm_nav_menu_link_attributes($atts, $item, $args){
-	if (isset($atts['href']) && $atts['href'] != '' && get_option( 'hug_append_all' ) == 1){
-		$atts['href'] = add_query_arg( HUGGenerateUTMsForURL(), $atts['href'] );
-	}
-	return $atts;
-}
-}
-add_filter('nav_menu_link_attributes', 'handl_utm_nav_menu_link_attributes', 10 ,3);
 
 if ( ! function_exists( 'handl_utm_grabber_merge_tags' ) ) {
 function handl_utm_grabber_merge_tags(){

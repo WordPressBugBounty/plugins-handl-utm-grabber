@@ -22,7 +22,7 @@ class Contact_Form_7_Submission_Listener extends Handl_Submission_Listener {
 			$data   = $submission->get_posted_data();
 			$posted = array();
 			foreach ( handl_lite_tracking_params() as $param ) {
-				$key = $param . '_cf7';
+				$key = \handl_lite_cf7_field_name( $param );
 				if ( ! isset( $data[ $key ] ) ) {
 					continue;
 				}

@@ -35,7 +35,7 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	 * @return string Regex.
 	 */
 	private static function pattern_ours( $param ) {
-		return '/\[hidden\s+' . preg_quote( $param . '_cf7', '/' ) . '[^\]]*\]/';
+		return '/\[hidden\s+' . preg_quote( \handl_lite_cf7_field_name( $param ), '/' ) . '[^\]]*\]/';
 	}
 
 	/**
@@ -46,7 +46,7 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	 * @return string Regex.
 	 */
 	private static function pattern_pro( $param ) {
-		return '/\[' . preg_quote( $param . '_cf7', '/' ) . '(?:\s[^\]]*)?\]/';
+		return '/\[' . preg_quote( \handl_lite_cf7_field_name( $param ), '/' ) . '(?:\s[^\]]*)?\]/';
 	}
 
 	/**
@@ -57,7 +57,7 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	 * @return string Regex.
 	 */
 	private static function pattern_mail_tag( $param ) {
-		return '/\[(?:_raw_)?' . preg_quote( $param . '_cf7', '/' ) . '\]/';
+		return '/\[(?:_raw_)?' . preg_quote( \handl_lite_cf7_field_name( $param ), '/' ) . '\]/';
 	}
 
 	/**
@@ -268,7 +268,8 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	}
 
 	/**
-	 * Strip stray `[hidden {param}_cf7 …]` lines outside the marker block.
+	 * Strip stray `[hidden {param}_cf7 …]` lines outside the marker block,
+	 * incl. unprefixed names CF7 rejects (`_fbc_cf7`).
 	 *
 	 * @param string $text
 	 * @param array  $params Tracked param names.
@@ -276,8 +277,10 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	 */
 	private function strip_legacy_lines( $text, $params ) {
 		foreach ( $params as $param ) {
-			$pattern = '/\[hidden\s+' . preg_quote( $param . '_cf7', '/' ) . '[^\]]*\]\s*\n?/';
-			$text    = preg_replace( $pattern, '', $text );
+			foreach ( array_unique( array( \handl_lite_cf7_field_name( $param ), $param . '_cf7' ) ) as $name ) {
+				$pattern = '/\[hidden\s+' . preg_quote( $name, '/' ) . '[^\]]*\]\s*\n?/';
+				$text    = preg_replace( $pattern, '', $text );
+			}
 		}
 		return $text;
 	}
@@ -305,7 +308,7 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	private function build_form_block( $params, $form_id ) {
 		$lines = array( self::FORM_START );
 		foreach ( $params as $param ) {
-			$name    = $param . '_cf7';
+			$name    = \handl_lite_cf7_field_name( $param );
 			$lines[] = sprintf(
 				'[hidden %s %s-%d class:%s id:%s]',
 				$name,
@@ -328,7 +331,7 @@ class Contact_Form_7_Integration extends Handl_Integration {
 	private function build_mail_block( $params ) {
 		$lines = array( self::MAIL_START );
 		foreach ( $params as $param ) {
-			$lines[] = sprintf( '%s: [%s_cf7]', $param, $param );
+			$lines[] = sprintf( '%s: [%s]', $param, \handl_lite_cf7_field_name( $param ) );
 		}
 		$lines[] = self::MAIL_END;
 		return implode( "\n", $lines );

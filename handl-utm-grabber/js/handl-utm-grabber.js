@@ -30,7 +30,7 @@ function HandLBindNinjaFormsFiller(){
                     var matches = String(item.default).match(/^{(\w+):(\w+)/)
                     if (matches && matches.length == 3 && matches[1] === 'handl') {
                         var c = Cookies.get(matches[2])
-                        jQuery('#nf-field-' + item.id).val(c === undefined ? '' : decodeURIComponent(c).replace(/[%]/g,' '))
+                        jQuery('#nf-field-' + item.id).val(c === undefined ? '' : handlSafeDecode(decodeURIComponent, c).replace(/[%]/g,' '))
                     }
                 }
             })
@@ -55,38 +55,18 @@ function setHandLParams(){
 }
 
 function HandLAppendTrackedLinks(){
-    jQuery('.utm-out').each(function(){
-        // Only process if this is an anchor tag with href
-        if (this.tagName.toLowerCase() !== 'a' || !this.href) {
-            return;
+    jQuery('a.utm-out, .utm-out a').not('#wpadminbar a, .no-utm, .no-utm a').each(function(){
+        if (!/^https?:/.test(this.href) || this.getAttribute('href').charAt(0) === '#') {
+            return
         }
-
-        // Sanitize URL parameters and handl_utm object
-        var urlParams = getSearchParams(this.href);
-        var sanitizedParams = {};
-
-        // Only include parameters that exist in handl_utm
-        for(var key in urlParams) {
-            if(handl_utm.hasOwnProperty(key)) {
-                sanitizedParams[key] = encodeURIComponent(urlParams[key]);
+        var url = new URL(this.href)
+        for (var key in handl_utm) {
+            if (handl_utm[key] && !url.searchParams.has(key)) {
+                url.search += (url.search ? '&' : '?') + key + '=' + encodeURIComponent(handl_utm[key])
             }
         }
-
-        // Sanitize handl_utm values
-        var sanitizedHandlUtm = {};
-        for(var key in handl_utm) {
-            sanitizedHandlUtm[key] = encodeURIComponent(handl_utm[key]);
-        }
-
-        // Merge sanitized objects
-        var merged = jQuery.extend({}, sanitizedHandlUtm, sanitizedParams);
-
-        // Reset href and append sanitized parameters
-        this.href = this.href.split('?')[0]; // Keep base URL only
-        if(!jQuery.isEmptyObject(merged)) {
-            this.href += "?" + jQuery.param(merged);
-        }
-    });
+        this.href = url.href
+    })
 }
 
 // Marketing consent granted -> capture; withdrawn -> clean up. No reload.
@@ -138,11 +118,13 @@ function RunFieldFiller(){
         var curval = Cookies.get(v)
 
         if (curval != undefined) {
-            curval = decodeURIComponent(curval).replace(/[%]/g,' ')
+            curval = handlSafeDecode(decodeURIComponent, curval)
 
             if ([ 'utm_source', 'utm_medium', 'utm_term', 'utm_content', 'utm_campaign', 'gclid' ].indexOf(v) !== -1) {
                 handl_utm[v] = curval
             }
+
+            curval = curval.replace(/[%]/g,' ')
 
             if (v == 'username') {
                 //Maybe this should apply to all... We'll see...
@@ -183,12 +165,13 @@ function RunFieldFiller(){
     });
 }
 
-function getSearchParams(url,k){
-    var p={};
-    var a = document.createElement('a');
-    a.href = url;
-    a.search.replace(/[?&]+([^=&]+)=([^&]*)/gi,function(s,k,v){p[k]=v})
-    return k?p[k]:p;
+// A value that cannot be decoded, like "20% off", is kept as it is instead of stopping the script.
+function handlSafeDecode(decode, value) {
+    try {
+        return decode(value);
+    } catch (e) {
+        return value;
+    }
 }
 
 function GetQVars(v,qvars){

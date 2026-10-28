@@ -23,6 +23,27 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 
 /**
+ * CF7 field name for a tracked param. CF7 rejects names that do not start with
+ * a letter, so params starting with `_` get a `handl` prefix: `_fbc` → `handl_fbc_cf7`.
+ */
+function handl_lite_cf7_field_name( $param ) {
+	$param = (string) $param;
+	return ( strpos( $param, '_' ) === 0 ? 'handl' . $param : $param ) . '_cf7';
+}
+
+/** Tracked param for a CF7 field name, or '' when it is not one of ours. */
+function handl_lite_cf7_param_of( $field ) {
+	static $map = null;
+	if ( $map === null ) {
+		$map = array();
+		foreach ( handl_lite_tracking_params() as $param ) {
+			$map[ handl_lite_cf7_field_name( $param ) ] = $param;
+		}
+	}
+	return isset( $map[ $field ] ) ? $map[ $field ] : '';
+}
+
+/**
  * Server-side fill for injected `[hidden {param}_cf7 …]` tags. CF7 passes each
  * scanned tag through this filter while it is still an array; the hidden
  * handler then renders `reset( $tag->values )`. The `{param}_cf7` custom tag
@@ -43,8 +64,8 @@ function handl_lite_cf7_fill_hidden_tag( $scanned_tag ) {
 		return $scanned_tag;
 	}
 
-	$param = substr( $name, 0, -4 );
-	if ( ! in_array( $param, handl_lite_tracking_params(), true ) ) {
+	$param = handl_lite_cf7_param_of( $name );
+	if ( $param === '' ) {
 		return $scanned_tag;
 	}
 
@@ -68,7 +89,7 @@ add_filter( 'wpcf7_form_tag', 'handl_lite_cf7_fill_hidden_tag' );
  * derived from the tag type, so one handler serves every registered type.
  */
 function handl_lite_cf7_pro_tag_handler( $tag ) {
-	$param = substr( (string) $tag->type, 0, -4 );
+	$param = handl_lite_cf7_param_of( (string) $tag->type );
 
 	$class = wpcf7_form_controls_class( $tag->type );
 
@@ -98,7 +119,7 @@ function handl_lite_cf7_register_pro_tags() {
 
 	foreach ( handl_lite_tracking_params() as $param ) {
 		wpcf7_add_form_tag(
-			$param . '_cf7',
+			handl_lite_cf7_field_name( $param ),
 			'handl_lite_cf7_pro_tag_handler',
 			array( 'name-attr' => true )
 		);

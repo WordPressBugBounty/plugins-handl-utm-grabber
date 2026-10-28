@@ -32,7 +32,7 @@ function handl_lite_gf_client_side_prefill( $form_string, $form ) {
 		// [id="…"] attribute selector reaches every element with that ID when
 		// the same form renders more than once on a page.
 		$script .= sprintf(
-			'var c=Cookies.get("%1$s");jQuery(\'[id="%2$s"]\').val(c===undefined?"":decodeURIComponent(c).replace(/[%%]/g," "));',
+			'var c=Cookies.get("%1$s");jQuery(\'[id="%2$s"]\').val(c===undefined?"":handlSafeDecode(decodeURIComponent, c).replace(/[%%]/g," "));',
 			esc_js( $input_name ),
 			esc_js( $input_id )
 		);
